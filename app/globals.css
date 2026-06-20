@@ -3,59 +3,129 @@
 
 @import "tailwindcss";
 
-/* ─── Design Tokens ────────────────────────────────────────────────────────── */
-:root {
-  /* Background */
-  --bg-base: #070b14;
-  --bg-surface: #0d1220;
-  --bg-elevated: #111827;
-  --bg-hover: #1a2235;
+/* ─────────────────────────────────────────────────────────────────────────────
+   LIGHT THEME (default)
+   Background: Slate / Zinc neutrals
+   Accent:     Blue primary, Purple for microtask, Amber for macrotask
+──────────────────────────────────────────────────────────────────────────── */
+.light {
+  /* Backgrounds */
+  --bg-base:     #f1f5f9;
+  --bg-surface:  #ffffff;
+  --bg-elevated: #f8fafc;
+  --bg-hover:    #e2e8f0;
+  --bg-sidebar:  #ffffff;
 
   /* Borders */
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-default: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.2);
+  --border-subtle:  #e2e8f0;
+  --border-default: #cbd5e1;
+  --border-strong:  #94a3b8;
 
   /* Text */
-  --text-primary: #f0f4ff;
-  --text-secondary: #8b9ab8;
-  --text-muted: #4b5878;
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #94a3b8;
 
-  /* Microtask — violet */
-  --micro-primary: #8b5cf6;
+  /* Microtask — muted violet */
+  --micro-primary:   #7c3aed;
   --micro-secondary: #6d28d9;
-  --micro-glow: rgba(139, 92, 246, 0.4);
-  --micro-bg: rgba(139, 92, 246, 0.08);
+  --micro-glow:      rgba(124, 58, 237, 0.25);
+  --micro-bg:        rgba(124, 58, 237, 0.06);
+  --micro-text:      #7c3aed;
 
-  /* Macrotask — amber */
-  --macro-primary: #f59e0b;
-  --macro-secondary: #d97706;
-  --macro-glow: rgba(245, 158, 11, 0.4);
-  --macro-bg: rgba(245, 158, 11, 0.08);
+  /* Macrotask — muted amber */
+  --macro-primary:   #d97706;
+  --macro-secondary: #b45309;
+  --macro-glow:      rgba(217, 119, 6, 0.25);
+  --macro-bg:        rgba(217, 119, 6, 0.07);
+  --macro-text:      #92400e;
 
   /* Event Loop — teal */
-  --loop-primary: #14b8a6;
-  --loop-secondary: #0d9488;
-  --loop-glow: rgba(20, 184, 166, 0.5);
-  --loop-bg: rgba(20, 184, 166, 0.08);
+  --loop-primary:   #0d9488;
+  --loop-secondary: #0f766e;
+  --loop-glow:      rgba(13, 148, 136, 0.35);
+  --loop-bg:        rgba(13, 148, 136, 0.07);
 
   /* Call Stack — blue */
-  --stack-primary: #3b82f6;
-  --stack-secondary: #2563eb;
-  --stack-glow: rgba(59, 130, 246, 0.4);
-  --stack-bg: rgba(59, 130, 246, 0.08);
+  --stack-primary:   #2563eb;
+  --stack-secondary: #1d4ed8;
+  --stack-glow:      rgba(37, 99, 235, 0.3);
+  --stack-bg:        rgba(37, 99, 235, 0.06);
 
   /* System */
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --info: #3b82f6;
+  --success:  #16a34a;
+  --warning:  #d97706;
+  --danger:   #dc2626;
+  --info:     #2563eb;
 
-  /* Sidebar */
-  --sidebar-width: 220px;
+  /* Log terminal */
+  --log-bg:         #1e293b;
+  --log-timestamp:  #64748b;
 
-  /* Control panel */
-  --control-width: 260px;
+  /* Layout */
+  --sidebar-width:  220px;
+  --control-width:  260px;
+
+  /* Shadow */
+  --shadow-sm:  0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:  0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg:  0 10px 15px rgba(0,0,0,0.06), 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DARK THEME
+   Background: deep navy/slate
+   Accent:     brighter versions of same palette
+──────────────────────────────────────────────────────────────────────────── */
+:root,
+.dark {
+  --bg-base:     #0a0f1e;
+  --bg-surface:  #0f1629;
+  --bg-elevated: #162035;
+  --bg-hover:    #1e2d47;
+  --bg-sidebar:  #0f1629;
+
+  --border-subtle:  rgba(255,255,255,0.07);
+  --border-default: rgba(255,255,255,0.12);
+  --border-strong:  rgba(255,255,255,0.22);
+
+  --text-primary:   #e8edf7;
+  --text-secondary: #8fa3c1;
+  --text-muted:     #4a5f80;
+
+  --micro-primary:   #a78bfa;
+  --micro-secondary: #8b5cf6;
+  --micro-glow:      rgba(167, 139, 250, 0.35);
+  --micro-bg:        rgba(139, 92, 246, 0.1);
+  --micro-text:      #c4b5fd;
+
+  --macro-primary:   #fbbf24;
+  --macro-secondary: #f59e0b;
+  --macro-glow:      rgba(251, 191, 36, 0.3);
+  --macro-bg:        rgba(245, 158, 11, 0.1);
+  --macro-text:      #fcd34d;
+
+  --loop-primary:   #2dd4bf;
+  --loop-secondary: #14b8a6;
+  --loop-glow:      rgba(45, 212, 191, 0.4);
+  --loop-bg:        rgba(20, 184, 166, 0.1);
+
+  --stack-primary:   #60a5fa;
+  --stack-secondary: #3b82f6;
+  --stack-glow:      rgba(96, 165, 250, 0.35);
+  --stack-bg:        rgba(59, 130, 246, 0.1);
+
+  --success:  #4ade80;
+  --warning:  #fbbf24;
+  --danger:   #f87171;
+  --info:     #60a5fa;
+
+  --log-bg:         #060a14;
+  --log-timestamp:  #3d5273;
+
+  --shadow-sm:  0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md:  0 4px 6px rgba(0,0,0,0.3), 0 2px 4px rgba(0,0,0,0.4);
+  --shadow-lg:  0 10px 15px rgba(0,0,0,0.4), 0 4px 6px rgba(0,0,0,0.3);
 }
 
 /* ─── Base Reset ───────────────────────────────────────────────────────────── */
@@ -79,244 +149,150 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   overflow: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* ─── Scrollbar ────────────────────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
+::-webkit-scrollbar        { width: 4px; height: 4px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--border-default); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
-/* ─── Monospace ────────────────────────────────────────────────────────────── */
-.font-mono {
-  font-family: "JetBrains Mono", "Fira Code", monospace;
-}
-
-/* ─── Glassmorphism cards ──────────────────────────────────────────────────── */
-.glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+/* ─── Surface cards ─────────────────────────────────────────────────────────── */
+.surface-card {
+  background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: 12px;
+  box-shadow: var(--shadow-sm);
 }
 
-.glass-card-elevated {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-default);
+/* Kept for compatibility */
+.glass-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
+  box-shadow: var(--shadow-sm);
 }
 
 /* ─── Task card colors ─────────────────────────────────────────────────────── */
 .task-micro {
   background: var(--micro-bg);
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  color: #c4b5fd;
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  color: var(--micro-text);
 }
-
+.dark .task-micro {
+  border-color: rgba(167, 139, 250, 0.3);
+  color: var(--micro-text);
+}
 .task-micro.active {
-  background: rgba(139, 92, 246, 0.2);
+  background: rgba(124, 58, 237, 0.12);
   border-color: var(--micro-primary);
-  box-shadow: 0 0 12px var(--micro-glow), inset 0 0 8px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 10px var(--micro-glow);
 }
 
 .task-macro {
   background: var(--macro-bg);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  color: #fcd34d;
+  border: 1px solid rgba(217, 119, 6, 0.25);
+  color: var(--macro-text);
 }
-
+.dark .task-macro {
+  border-color: rgba(251, 191, 36, 0.3);
+  color: var(--macro-text);
+}
 .task-macro.active {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(217, 119, 6, 0.14);
   border-color: var(--macro-primary);
-  box-shadow: 0 0 12px var(--macro-glow), inset 0 0 8px rgba(245, 158, 11, 0.1);
+  box-shadow: 0 0 10px var(--macro-glow);
 }
 
-/* ─── Keyframe Animations ──────────────────────────────────────────────────── */
+/* ─── Keyframes ─────────────────────────────────────────────────────────────── */
+@keyframes spin-slow   { from { transform: rotate(0deg); }   to { transform: rotate(360deg); } }
+@keyframes pulse-ring  { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.7; transform:scale(1.04); } }
+@keyframes slide-in-right { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
+@keyframes slide-in-left  { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+@keyframes slide-in-up    { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fade-in        { from { opacity:0; } to { opacity:1; } }
+@keyframes pop-in         { 0% { opacity:0; transform:scale(0.85); } 60% { transform:scale(1.04); } 100% { opacity:1; transform:scale(1); } }
+@keyframes glow-pulse     { 0%,100% { box-shadow: 0 0 8px var(--loop-glow); } 50% { box-shadow: 0 0 22px var(--loop-glow); } }
+@keyframes float          { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-4px); } }
+@keyframes task-enter     { from { opacity:0; transform:scale(0.88) translateY(-6px); } to { opacity:1; transform:scale(1) translateY(0); } }
+@keyframes shimmer        { 0% { background-position:-200% center; } 100% { background-position:200% center; } }
+@keyframes blink          { 0%,100% { opacity:1; } 50% { opacity:0; } }
+@keyframes orbit          { from { transform:rotate(0deg) translateX(58px) rotate(0deg); } to { transform:rotate(360deg) translateX(58px) rotate(-360deg); } }
+@keyframes phase-slide-in { from { opacity:0; transform:translateY(16px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
 
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
+/* ─── Animation utilities ────────────────────────────────────────────────────── */
+.animate-spin-slow   { animation: spin-slow 4s linear infinite; }
+.animate-pulse-ring  { animation: pulse-ring 2s ease-in-out infinite; }
+.animate-slide-right { animation: slide-in-right 0.25s ease forwards; }
+.animate-slide-left  { animation: slide-in-left 0.25s ease forwards; }
+.animate-slide-up    { animation: slide-in-up 0.25s ease forwards; }
+.animate-fade-in     { animation: fade-in 0.25s ease forwards; }
+.animate-pop-in      { animation: pop-in 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.animate-glow-pulse  { animation: glow-pulse 2s ease-in-out infinite; }
+.animate-float       { animation: float 3s ease-in-out infinite; }
+.animate-task-enter  { animation: task-enter 0.2s cubic-bezier(0.34,1.56,0.64,1) forwards; }
 
-@keyframes pulse-ring {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%       { opacity: 0.6; transform: scale(1.04); }
-}
-
-@keyframes slide-in-right {
-  from { opacity: 0; transform: translateX(24px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slide-in-left {
-  from { opacity: 0; transform: translateX(-24px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes slide-in-up {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes pop-in {
-  0%   { opacity: 0; transform: scale(0.8); }
-  60%  { transform: scale(1.05); }
-  100% { opacity: 1; transform: scale(1); }
-}
-
-@keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 8px var(--loop-glow); }
-  50%       { box-shadow: 0 0 24px var(--loop-glow), 0 0 48px rgba(20, 184, 166, 0.2); }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-4px); }
-}
-
-@keyframes task-enter {
-  from { opacity: 0; transform: scale(0.85) translateY(-8px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-@keyframes task-exit {
-  from { opacity: 1; transform: scale(1); }
-  to   { opacity: 0; transform: scale(0.8) translateY(8px); }
-}
-
-@keyframes shimmer {
-  0%   { background-position: -200% center; }
-  100% { background-position: 200% center; }
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
-}
-
-@keyframes orbit {
-  from { transform: rotate(0deg) translateX(58px) rotate(0deg); }
-  to   { transform: rotate(360deg) translateX(58px) rotate(-360deg); }
-}
-
-/* ─── Animation utility classes ────────────────────────────────────────────── */
-.animate-spin-slow    { animation: spin-slow 3s linear infinite; }
-.animate-pulse-ring   { animation: pulse-ring 2s ease-in-out infinite; }
-.animate-slide-right  { animation: slide-in-right 0.3s ease forwards; }
-.animate-slide-left   { animation: slide-in-left 0.3s ease forwards; }
-.animate-slide-up     { animation: slide-in-up 0.25s ease forwards; }
-.animate-fade-in      { animation: fade-in 0.3s ease forwards; }
-.animate-pop-in       { animation: pop-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.animate-glow-pulse   { animation: glow-pulse 2s ease-in-out infinite; }
-.animate-float        { animation: float 3s ease-in-out infinite; }
-.animate-task-enter   { animation: task-enter 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-.animate-shimmer {
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
-  background-size: 200% auto;
-  animation: shimmer 2s linear infinite;
-}
-
-/* ─── Queue section headers ─────────────────────────────────────────────────── */
-.queue-header-micro {
-  color: var(--micro-primary);
-  text-shadow: 0 0 12px var(--micro-glow);
-}
-
-.queue-header-macro {
-  color: var(--macro-primary);
-  text-shadow: 0 0 12px var(--macro-glow);
-}
-
-/* ─── Phase badge ──────────────────────────────────────────────────────────── */
+/* ─── Phase badge ────────────────────────────────────────────────────────────── */
 .phase-badge {
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  padding: 3px 10px;
+  padding: 2px 9px;
   border-radius: 999px;
 }
 
-/* ─── Button base ──────────────────────────────────────────────────────────── */
+/* ─── Queue section headers ──────────────────────────────────────────────────── */
+.queue-header-micro { color: var(--micro-primary); }
+.queue-header-macro { color: var(--macro-primary); }
+
+/* ─── Buttons ────────────────────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 16px;
+  padding: 8px 14px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
   border: 1px solid transparent;
   white-space: nowrap;
   user-select: none;
+  font-family: "Inter", sans-serif;
 }
-
-.btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+.btn:disabled { opacity: 0.38; cursor: not-allowed; }
 
 .btn-micro {
-  background: linear-gradient(135deg, var(--micro-secondary), var(--micro-primary));
-  color: white;
+  background: var(--micro-primary);
+  color: #fff;
   border-color: var(--micro-primary);
-  box-shadow: 0 0 0 rgba(139, 92, 246, 0);
 }
-.btn-micro:hover:not(:disabled) {
-  box-shadow: 0 0 16px var(--micro-glow);
-  transform: translateY(-1px);
-}
+.btn-micro:hover:not(:disabled) { filter: brightness(1.1); box-shadow: 0 0 14px var(--micro-glow); }
 
 .btn-macro {
-  background: linear-gradient(135deg, var(--macro-secondary), var(--macro-primary));
-  color: #0f0a00;
+  background: var(--macro-primary);
+  color: #fff;
   border-color: var(--macro-primary);
 }
-.btn-macro:hover:not(:disabled) {
-  box-shadow: 0 0 16px var(--macro-glow);
-  transform: translateY(-1px);
-}
+.btn-macro:hover:not(:disabled) { filter: brightness(1.1); box-shadow: 0 0 14px var(--macro-glow); }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--stack-secondary), var(--stack-primary));
-  color: white;
+  background: var(--stack-primary);
+  color: #fff;
   border-color: var(--stack-primary);
 }
-.btn-primary:hover:not(:disabled) {
-  box-shadow: 0 0 16px var(--stack-glow);
-  transform: translateY(-1px);
-}
+.btn-primary:hover:not(:disabled) { filter: brightness(1.1); box-shadow: 0 0 14px var(--stack-glow); }
 
 .btn-success {
-  background: linear-gradient(135deg, #16a34a, #22c55e);
-  color: white;
-  border-color: #22c55e;
+  background: var(--success);
+  color: #fff;
+  border-color: var(--success);
 }
-.btn-success:hover:not(:disabled) {
-  box-shadow: 0 0 16px rgba(34, 197, 94, 0.4);
-  transform: translateY(-1px);
-}
+.btn-success:hover:not(:disabled) { filter: brightness(1.08); box-shadow: 0 0 12px rgba(22,163,74,0.35); }
 
 .btn-ghost {
   background: transparent;
@@ -332,19 +308,16 @@ body {
 .btn-danger {
   background: transparent;
   color: var(--danger);
-  border-color: rgba(239, 68, 68, 0.3);
+  border-color: rgba(220,38,38,0.3);
 }
-.btn-danger:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: var(--danger);
-}
+.btn-danger:hover:not(:disabled) { background: rgba(220,38,38,0.08); border-color: var(--danger); }
 
-/* ─── Sidebar nav item ─────────────────────────────────────────────────────── */
+/* ─── Nav item ───────────────────────────────────────────────────────────────── */
 .nav-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 12px;
+  padding: 8px 12px;
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
@@ -353,53 +326,58 @@ body {
   transition: all 0.15s ease;
   text-decoration: none;
   user-select: none;
+  border: 1px solid transparent;
 }
-
-.nav-item:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-}
-
+.nav-item:hover  { background: var(--bg-hover); color: var(--text-primary); }
 .nav-item.active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.1));
-  color: var(--text-primary);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: var(--stack-bg);
+  color: var(--stack-primary);
+  border-color: rgba(37,99,235,0.2);
+  font-weight: 600;
+}
+.dark .nav-item.active {
+  background: rgba(96,165,250,0.1);
+  border-color: rgba(96,165,250,0.2);
 }
 
-/* ─── Stat card ────────────────────────────────────────────────────────────── */
+/* ─── Stat card ──────────────────────────────────────────────────────────────── */
 .stat-card {
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  transition: border-color 0.2s ease;
 }
+.stat-card:hover { border-color: var(--border-default); }
 
 .stat-label {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
 
 .stat-value {
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 700;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
-/* ─── Log terminal ─────────────────────────────────────────────────────────── */
+/* ─── Log terminal ───────────────────────────────────────────────────────────── */
 .log-terminal {
-  background: #050810;
+  background: var(--log-bg);
   border: 1px solid var(--border-subtle);
   border-radius: 10px;
   font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
+  font-size: 11.5px;
   overflow-y: auto;
-  padding: 12px;
+  padding: 12px 14px;
+  height: 100%;
 }
 
 .log-entry {
@@ -407,16 +385,41 @@ body {
   display: flex;
   gap: 10px;
   align-items: baseline;
-  animation: slide-in-left 0.2s ease;
+  animation: slide-in-left 0.15s ease;
 }
 
-.log-ts {
-  color: #3d4f6e;
-  font-size: 11px;
-  flex-shrink: 0;
+.log-ts      { color: var(--log-timestamp); font-size: 10.5px; flex-shrink: 0; }
+.log-msg-micro  { color: #a78bfa; }
+.log-msg-macro  { color: #fbbf24; }
+.log-msg-system { color: #34d399; }
+.log-msg-info   { color: #93c5fd; }
+
+/* ─── Phase timeline node ────────────────────────────────────────────────────── */
+.phase-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 100px;
+  animation: phase-slide-in 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards;
 }
 
-.log-msg-micro { color: #a78bfa; }
-.log-msg-macro { color: #fbbf24; }
-.log-msg-system { color: #6ee7b7; }
-.log-msg-info { color: #93c5fd; }
+.phase-node-bubble {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.phase-connector {
+  height: 2px;
+  flex: 1;
+  min-width: 20px;
+  transition: background 0.3s ease;
+}

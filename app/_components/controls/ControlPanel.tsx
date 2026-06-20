@@ -236,10 +236,10 @@ export default function ControlPanel() {
               key={s}
               className="btn btn-ghost"
               style={{
-                padding: "6px 4px",
-                fontSize: 11,
-                background: speed === s ? "rgba(59, 130, 246, 0.15)" : "transparent",
-                borderColor: speed === s ? "rgba(59, 130, 246, 0.5)" : "var(--border-subtle)",
+                padding: "6px 2px",
+                fontSize: 10,
+                background: speed === s ? "var(--stack-bg)" : "transparent",
+                borderColor: speed === s ? "var(--stack-primary)" : "var(--border-subtle)",
                 color: speed === s ? "var(--stack-primary)" : "var(--text-secondary)",
               }}
               onClick={() => setSpeed(s)}
@@ -249,7 +249,19 @@ export default function ControlPanel() {
           ))}
         </div>
         <div style={{ marginTop: 8, fontSize: 10, color: "var(--text-muted)", textAlign: "center" }}>
-          {speed === 0.5 ? "Slow (700ms×2 per phase)" : speed === 1 ? "Normal (700ms per phase)" : speed === 2 ? "Fast (350ms per phase)" : "Ultra-fast (140ms per phase)"}
+          {speed === 0.1
+            ? "Extremely Slow (7.0s per step)"
+            : speed === 0.25
+            ? "Very Slow (2.8s per step)"
+            : speed === 0.5
+            ? "Slow (1.4s per step)"
+            : speed === 1
+            ? "Normal (700ms per step)"
+            : speed === 2
+            ? "Fast (350ms per step)"
+            : speed === 5
+            ? "Very Fast (140ms per step)"
+            : "Blazing Fast (70ms per step)"}
         </div>
       </div>
     </div>

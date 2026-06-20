@@ -1,29 +1,53 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import React, { useRef, useEffect } from "react";
 import { useRuntimeStore } from "@/app/_lib/store";
 
-const EVENT_COLORS: Record<string, string> = {
-  microtask: "var(--micro-primary)",
-  macrotask: "var(--macro-primary)",
-};
-
-const EVENT_ICONS: Record<string, string> = {
-  "entered Event Loop": "⟳",
-  "entered Call Stack": "→",
-  executing: "▶",
-  completed: "✓",
-};
-
 export default function TimelineView() {
-  const { timelineTicks } = useRuntimeStore();
+  const { phaseHistory, microtaskQueue, macrotaskQueue, currentPhase, isRunning } = useRuntimeStore();
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Project future phases
+  const allPhases: any[] = [...phaseHistory];
+  let nextPhaseNum = phaseHistory.length + 1;
+
+  // 1. If we have microtasks in queue and we are not currently draining them, the next phase will drain them
+  if (microtaskQueue.length > 0 && currentPhase !== "draining-microtasks") {
+    allPhases.push({
+      id: `projected-micro`,
+      phaseNumber: nextPhaseNum++,
+      kind: "microtask-drain",
+      label: "Drain Microtasks",
+      taskCount: microtaskQueue.length,
+      status: "pending",
+      startedAt: 0,
+    });
+  }
+
+  // 2. Add each remaining macrotask as a projected future phase
+  macrotaskQueue.forEach((macro) => {
+    allPhases.push({
+      id: `projected-macro-${macro.id}`,
+      phaseNumber: nextPhaseNum++,
+      kind: "macrotask",
+      label: macro.label,
+      taskCount: 1,
+      status: "pending",
+      startedAt: 0,
+    });
+  });
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
+      // Scroll to the active node or to the end
+      const activeElement = scrollRef.current.querySelector(".active-phase-node");
+      if (activeElement) {
+        activeElement.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      } else {
+        scrollRef.current.scrollLeft = scrollRef.current.scrollWidth;
+      }
     }
-  }, [timelineTicks.length]);
+  }, [phaseHistory.length, allPhases.length]);
 
   return (
     <div
@@ -34,7 +58,7 @@ export default function TimelineView() {
         overflow: "hidden",
       }}
     >
-      {timelineTicks.length === 0 ? (
+      {allPhases.length === 0 ? (
         <div
           style={{
             flex: 1,
@@ -52,126 +76,148 @@ export default function TimelineView() {
             <circle cx="12" cy="12" r="2" />
             <circle cx="17" cy="12" r="2" />
           </svg>
-          <span style={{ opacity: 0.5 }}>Timeline will populate when simulation runs</span>
+          <span style={{ opacity: 0.5 }}>Phase timeline will populate when tasks are scheduled or running</span>
         </div>
       ) : (
         <div
           ref={scrollRef}
           style={{
             display: "flex",
-            alignItems: "flex-end",
+            alignItems: "center",
             gap: 0,
             overflowX: "auto",
             overflowY: "hidden",
             flex: 1,
-            padding: "0 16px 0 8px",
+            padding: "16px 24px",
           }}
         >
-          {timelineTicks.map((tick, i) => {
-            const color = EVENT_COLORS[tick.taskType] || "var(--text-secondary)";
-            const icon = EVENT_ICONS[tick.event] || "·";
-            const isFirst =
-              i === 0 || timelineTicks[i - 1]?.taskId !== tick.taskId;
-            const isLast =
-              i === timelineTicks.length - 1 ||
-              timelineTicks[i + 1]?.taskId !== tick.taskId;
+          {allPhases.map((phase, idx) => {
+            const isCompleted = phase.status === "completed";
+            const isActive = phase.status === "active";
+            const isPending = phase.status === "pending";
+
+            // Determine border color, background, color based on state
+            let bubbleBorder = "2px solid var(--border-default)";
+            let bubbleBg = "transparent";
+            let bubbleColor = "var(--text-muted)";
+            let labelColor = "var(--text-secondary)";
+            let connectorColor = "var(--border-subtle)";
+
+            if (isCompleted) {
+              bubbleBorder = "2px solid var(--success)";
+              bubbleBg = "var(--bg-elevated)";
+              bubbleColor = "var(--success)";
+              labelColor = "var(--text-primary)";
+              connectorColor = "var(--success)";
+            } else if (isActive) {
+              bubbleBorder = "2px solid var(--loop-primary)";
+              bubbleBg = "var(--bg-elevated)";
+              bubbleColor = "var(--loop-primary)";
+              labelColor = "var(--text-primary)";
+              connectorColor = "var(--border-default)";
+            }
+
+            const isMicro = phase.kind === "microtask-drain";
 
             return (
-              <div
-                key={tick.id}
-                className="animate-slide-up"
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  minWidth: 80,
-                  maxWidth: 100,
-                  gap: 4,
-                  paddingBottom: 8,
-                  position: "relative",
-                  animationDelay: `${i * 0.02}s`,
-                }}
-              >
-                {/* Tick label + event */}
+              <React.Fragment key={phase.id}>
+                {/* Node */}
                 <div
+                  className={`phase-node ${isActive ? "active-phase-node" : ""}`}
                   style={{
-                    fontSize: 9,
-                    color: "var(--text-muted)",
-                    fontWeight: 600,
-                    fontFamily: "JetBrains Mono, monospace",
-                  }}
-                >
-                  Tick {tick.tick}
-                </div>
-
-                {/* Task label */}
-                <div
-                  style={{
-                    fontSize: 9,
-                    color,
-                    fontWeight: 600,
-                    fontFamily: "JetBrains Mono, monospace",
-                    textAlign: "center",
-                    lineHeight: 1.2,
-                    maxWidth: 90,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                  title={`${tick.taskLabel} — ${tick.event}`}
-                >
-                  {tick.taskLabel}
-                </div>
-
-                {/* Event icon bubble */}
-                <div
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: "50%",
-                    background:
-                      tick.taskType === "microtask"
-                        ? "rgba(139, 92, 246, 0.15)"
-                        : "rgba(245, 158, 11, 0.12)",
-                    border: `1.5px solid ${color}`,
                     display: "flex",
+                    flexDirection: "column",
                     alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 12,
-                    color,
-                    boxShadow: `0 0 8px ${color}44`,
+                    gap: 8,
+                    minWidth: 120,
                     flexShrink: 0,
                   }}
                 >
-                  {icon}
+                  <div
+                    className="phase-node-bubble animate-pop-in"
+                    style={{
+                      border: bubbleBorder,
+                      background: bubbleBg,
+                      color: bubbleColor,
+                      boxShadow: isActive ? "0 0 10px var(--loop-glow)" : "none",
+                      position: "relative",
+                      animation: isActive ? "pulse-ring 2.5s infinite ease-in-out" : "none",
+                    }}
+                  >
+                    {isCompleted ? (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    ) : (
+                      phase.phaseNumber
+                    )}
+
+                    {/* Small badge to denote microtask drain vs macrotask */}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: -4,
+                        right: -4,
+                        width: 14,
+                        height: 14,
+                        borderRadius: "50%",
+                        background: isMicro ? "var(--micro-primary)" : "var(--macro-primary)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#fff",
+                        fontSize: 8,
+                        fontWeight: 800,
+                      }}
+                      title={isMicro ? "Microtask Drain" : "Macrotask"}
+                    >
+                      {isMicro ? "M" : "T"}
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                    <span
+                      style={{
+                        fontSize: 10,
+                        fontWeight: isActive || isCompleted ? 700 : 500,
+                        color: labelColor,
+                        fontFamily: isMicro ? "Inter, sans-serif" : "JetBrains Mono, monospace",
+                        textAlign: "center",
+                        maxWidth: 110,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {phase.label}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: 9,
+                        color: "var(--text-muted)",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {phase.taskCount > 0
+                        ? `${phase.taskCount} task${phase.taskCount > 1 ? "s" : ""}`
+                        : "pending"}
+                    </span>
+                  </div>
                 </div>
 
-                {/* Event name */}
-                <div
-                  style={{
-                    fontSize: 9,
-                    color: "var(--text-muted)",
-                    textAlign: "center",
-                    lineHeight: 1.3,
-                    maxWidth: 80,
-                  }}
-                >
-                  {tick.event}
-                </div>
-
-                {/* Horizontal connector line */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: isFirst ? "50%" : 0,
-                    right: isLast ? "50%" : 0,
-                    height: 1,
-                    background: `${color}33`,
-                    zIndex: -1,
-                  }}
-                />
-              </div>
+                {/* Connector Line */}
+                {idx < allPhases.length - 1 && (
+                  <div
+                    className="phase-connector"
+                    style={{
+                      height: 2,
+                      background: connectorColor,
+                      flex: "1 0 20px",
+                      minWidth: 20,
+                    }}
+                  />
+                )}
+              </React.Fragment>
             );
           })}
         </div>

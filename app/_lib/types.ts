@@ -41,6 +41,20 @@ export interface TimelineTick {
   timestamp: number;
 }
 
+// ─── Phase Entry (for visual phase timeline) ──────────────────────────────────
+
+export interface PhaseEntry {
+  id: string;
+  phaseNumber: number;
+  /** "microtask-drain" or "macrotask" */
+  kind: "microtask-drain" | "macrotask";
+  label: string;
+  taskCount: number; // how many tasks in this phase
+  status: "pending" | "active" | "completed";
+  startedAt: number;
+}
+
+
 // ─── Runtime Phase ────────────────────────────────────────────────────────────
 
 export type RuntimePhase =
@@ -57,7 +71,14 @@ export interface RuntimeState {
   macrotaskQueue: Task[];
   completedTasks: Task[];
   currentTask: Task | null;
-  currentIteration: number;
+  /**
+   * Number of completed Event Loop phases.
+   * One microtask-drain batch = 1 phase.
+   * One macrotask = 1 phase.
+   * 10 micros + 20 macros → 21 phases total.
+   */
+  currentPhaseNumber: number;
+  tasksExecuted: number;
   currentPhase: RuntimePhase;
   isRunning: boolean;
   isPaused: boolean;
@@ -69,8 +90,9 @@ export interface RuntimeState {
 
 // ─── Speed Config ─────────────────────────────────────────────────────────────
 
-export const SPEED_MULTIPLIERS = [0.5, 1, 2, 5] as const;
+export const SPEED_MULTIPLIERS = [0.1, 0.25, 0.5, 1, 2, 5, 10] as const;
 export type SpeedMultiplier = (typeof SPEED_MULTIPLIERS)[number];
+
 
 // ─── Timing (at 1x speed, ms) ─────────────────────────────────────────────────
 

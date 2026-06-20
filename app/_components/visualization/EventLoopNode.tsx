@@ -4,7 +4,7 @@ import { useRuntimeStore } from "@/app/_lib/store";
 import TaskCard from "./TaskCard";
 
 export default function EventLoopNode() {
-  const { currentTask, currentPhase, isRunning, microtaskQueue, macrotaskQueue } = useRuntimeStore();
+  const { currentTask, currentPhase, isRunning, microtaskQueue, macrotaskQueue, callStack } = useRuntimeStore();
 
   const isActive =
     currentPhase === "draining-microtasks" ||
@@ -12,6 +12,9 @@ export default function EventLoopNode() {
 
   const hasWork =
     microtaskQueue.length > 0 || macrotaskQueue.length > 0;
+
+  const isFullyIdle =
+    !isRunning && !hasWork && callStack.length === 0;
 
   const transitingTask =
     currentTask &&
@@ -54,7 +57,11 @@ export default function EventLoopNode() {
             inset: -6,
             borderRadius: "50%",
             border: "1px solid rgba(20, 184, 166, 0.15)",
-            animation: isActive ? "spin-slow 4s linear infinite" : "none",
+            animation: isActive 
+              ? "spin-slow 4s linear infinite" 
+              : isFullyIdle 
+              ? "spin-slow 15s linear infinite" 
+              : "none",
           }}
         />
 
@@ -91,6 +98,7 @@ export default function EventLoopNode() {
             inset: 4,
             borderRadius: "50%",
             border: "1.5px dashed rgba(20, 184, 166, 0.2)",
+            animation: isFullyIdle ? "spin-slow 20s linear infinite reverse" : "none",
           }}
         />
 
@@ -103,6 +111,8 @@ export default function EventLoopNode() {
             borderRadius: "50%",
             background: isActive
               ? "radial-gradient(circle at 40% 35%, rgba(20, 184, 166, 0.18), rgba(13, 148, 136, 0.06))"
+              : isFullyIdle
+              ? "radial-gradient(circle at 40% 35%, rgba(20, 184, 166, 0.08), transparent)"
               : "radial-gradient(circle at 40% 35%, rgba(20, 184, 166, 0.06), transparent)",
             border: `2px solid ${isActive ? "var(--loop-primary)" : "rgba(20, 184, 166, 0.3)"}`,
             display: "flex",
@@ -113,7 +123,10 @@ export default function EventLoopNode() {
             transition: "all 0.4s ease",
             boxShadow: isActive
               ? "0 0 20px var(--loop-glow), inset 0 0 20px rgba(20, 184, 166, 0.05)"
+              : isFullyIdle
+              ? "0 0 8px rgba(20, 184, 166, 0.1)"
               : "none",
+            animation: isFullyIdle ? "pulse-ring 4s ease-in-out infinite" : "none",
           }}
         >
           {/* Center icon */}
@@ -130,7 +143,7 @@ export default function EventLoopNode() {
               opacity: isActive ? 1 : 0.4,
               filter: isActive ? "drop-shadow(0 0 6px var(--loop-glow))" : "none",
               transition: "all 0.3s ease",
-              animation: isActive ? "spin-slow 6s linear infinite" : "none",
+              animation: isActive ? "spin-slow 6s linear infinite" : isFullyIdle ? "spin-slow 12s linear infinite" : "none",
             }}
           >
             <polyline points="23 4 23 10 17 10" />
@@ -157,15 +170,36 @@ export default function EventLoopNode() {
       {/* Current transiting task */}
       <div
         style={{
-          minHeight: 32,
+          minHeight: 45,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          textAlign: "center",
         }}
       >
         {transitingTask ? (
           <div className="animate-pop-in">
             <TaskCard task={transitingTask} size="sm" />
+          </div>
+        ) : isFullyIdle ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 2,
+              opacity: 0.8,
+            }}
+          >
+            <div style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Event Loop Idle
+            </div>
+            <div style={{ fontSize: 9, color: "var(--text-muted)" }}>
+              Call Stack Empty
+            </div>
+            <div style={{ fontSize: 9, color: "var(--text-muted)" }}>
+              No Tasks Scheduled
+            </div>
           </div>
         ) : (
           <div

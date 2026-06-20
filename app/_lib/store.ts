@@ -11,6 +11,7 @@ import {
   TimelineTick,
   TaskType,
   RuntimePhase,
+  PhaseEntry,
   MICROTASK_LABELS,
   MACROTASK_LABELS,
 } from "./types";
@@ -21,13 +22,14 @@ let macroLabelIdx = 0;
 
 // ─── Initial state ────────────────────────────────────────────────────────────
 
-const initialState: RuntimeState = {
+const initialState: RuntimeState & { phaseHistory: PhaseEntry[] } = {
   callStack: [],
   microtaskQueue: [],
   macrotaskQueue: [],
   completedTasks: [],
   currentTask: null,
-  currentIteration: 1,
+  currentPhaseNumber: 0,   // Event Loop phase counter (0 = idle/not started)
+  tasksExecuted: 0,        // Total tasks completed
   currentPhase: "idle",
   isRunning: false,
   isPaused: false,
@@ -35,11 +37,14 @@ const initialState: RuntimeState = {
   executionLogs: [],
   timelineTicks: [],
   tickCounter: 0,
+  phaseHistory: [],        // Visual phase timeline entries
 };
 
 // ─── Store interface ──────────────────────────────────────────────────────────
 
 interface RuntimeStore extends RuntimeState {
+  phaseHistory: PhaseEntry[];
+
   // User-facing actions
   addMicrotask: () => void;
   addMacrotask: () => void;
@@ -61,10 +66,15 @@ interface RuntimeStore extends RuntimeState {
   _removeFromMacrotaskQueue: (taskId: string) => void;
   _removeFromCallStack: (taskId: string) => void;
   _completeTask: (task: Task) => void;
-  _advanceIteration: () => void;
+  /**
+   * Advance the Event Loop phase counter.
+   * Called ONCE per microtask-drain session (not per task) and ONCE per macrotask.
+   */
+  _advancePhase: (kind: "microtask-drain" | "macrotask", label: string) => void;
+  _updateActivePhaseTaskCount: (delta: number) => void;
+  _completeActivePhase: () => void;
   _pushLog: (message: string, type: LogType) => void;
   _pushTick: (taskId: string, taskLabel: string, taskType: TaskType, event: string) => void;
-  _incrementTick: () => number;
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -84,9 +94,7 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
       status: "queued",
       createdAt: Date.now(),
     };
-    set((s) => ({
-      microtaskQueue: [...s.microtaskQueue, task],
-    }));
+    set((s) => ({ microtaskQueue: [...s.microtaskQueue, task] }));
     get()._pushLog(`[Micro] Added ${label} to Microtask Queue`, "micro");
   },
 
@@ -100,9 +108,7 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
       status: "queued",
       createdAt: Date.now(),
     };
-    set((s) => ({
-      macrotaskQueue: [...s.macrotaskQueue, task],
-    }));
+    set((s) => ({ macrotaskQueue: [...s.macrotaskQueue, task] }));
     get()._pushLog(`[Macro] Added ${label} to Macrotask Queue`, "macro");
   },
 
@@ -141,12 +147,8 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
   },
 
   stepForward: () => {
-    // Step mode: engine checks this flag to execute exactly one sub-step
-    // The engine reads `isPaused` and processes one phase when stepForward is called.
-    // We signal it by temporarily setting a step flag via a transient state toggle.
-    // (Engine handles the actual logic; this just marks intent.)
     set({ isPaused: false });
-    // Engine will re-pause after one step automatically.
+    // Engine re-pauses after one step.
   },
 
   setSpeed: (speed: number) => {
@@ -202,12 +204,52 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
     set((s) => ({
       callStack: s.callStack.filter((t) => t.id !== task.id),
       completedTasks: [completed, ...s.completedTasks],
+      tasksExecuted: s.tasksExecuted + 1,
       currentTask: null,
     }));
   },
 
-  _advanceIteration: () =>
-    set((s) => ({ currentIteration: s.currentIteration + 1 })),
+  /**
+   * Called ONCE when a new Event Loop phase begins:
+   * - start of a microtask-drain session
+   * - start of each macrotask
+   */
+  _advancePhase: (kind, label) => {
+    const nextPhaseNumber = get().currentPhaseNumber + 1;
+    const entry: PhaseEntry = {
+      id: uuid(),
+      phaseNumber: nextPhaseNumber,
+      kind,
+      label,
+      taskCount: 0,
+      status: "active",
+      startedAt: Date.now(),
+    };
+    set((s) => ({
+      currentPhaseNumber: nextPhaseNumber,
+      phaseHistory: [...s.phaseHistory, entry],
+    }));
+  },
+
+  _updateActivePhaseTaskCount: (delta) => {
+    set((s) => {
+      if (s.phaseHistory.length === 0) return {};
+      const updated = [...s.phaseHistory];
+      const last = updated[updated.length - 1];
+      updated[updated.length - 1] = { ...last, taskCount: last.taskCount + delta };
+      return { phaseHistory: updated };
+    });
+  },
+
+  _completeActivePhase: () => {
+    set((s) => {
+      if (s.phaseHistory.length === 0) return {};
+      const updated = [...s.phaseHistory];
+      const last = updated[updated.length - 1];
+      updated[updated.length - 1] = { ...last, status: "completed" };
+      return { phaseHistory: updated };
+    });
+  },
 
   _pushLog: (message, type) => {
     const entry: LogEntry = {
@@ -216,9 +258,7 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
       message,
       type,
     };
-    set((s) => ({
-      executionLogs: [...s.executionLogs, entry],
-    }));
+    set((s) => ({ executionLogs: [...s.executionLogs, entry] }));
   },
 
   _pushTick: (taskId, taskLabel, taskType, event) => {
@@ -237,11 +277,5 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
       timelineTicks: [...s.timelineTicks, tickEntry],
       tickCounter: tick,
     }));
-  },
-
-  _incrementTick: () => {
-    const next = get().tickCounter + 1;
-    set({ tickCounter: next });
-    return next;
   },
 }));

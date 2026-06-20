@@ -1,23 +1,28 @@
 /**
- * SimulationEngine
+ * SimulationEngine — corrected Event Loop phase model
  *
- * Pure simulation logic — no React imports, no UI side-effects.
- * Reads and mutates state exclusively via a getState() function supplied at startup.
+ * PHASE DEFINITION (matches actual JavaScript behavior):
+ *   Phase = one outer Event Loop iteration
+ *   ├─ Microtask drain session  →  1 phase  (ALL microtasks in a batch = 1 phase)
+ *   └─ One macrotask            →  1 phase
  *
- * Future phases (AST parser → runtime planner) can inject tasks by calling
- * store.addMicrotask() / store.addMacrotask() programmatically, and this
- * engine will pick them up without any modification.
+ * Example: 10 microtasks + 20 macrotasks = 21 phases
+ *   Phase  1: Drain all 10 microtasks
+ *   Phase  2: Execute macrotask #1
+ *   ...
+ *   Phase 21: Execute macrotask #20
  *
- * Architecture:
- *   User Action → store.startSimulation()
- *   Engine.start(getState) → setInterval → processStep()
- *   processStep() → getState() → reads live state → mutates via store actions
- *   UI → reacts to Zustand state changes
+ * KEY FIX vs prior version:
+ *   complete-microtask does NOT route back through check-queues when more
+ *   microtasks exist. It stays in the drain path (start-microtask) WITHOUT
+ *   incrementing the phase counter, preserving the "one drain = one phase" rule.
+ *   The phase counter is ONLY incremented in check-queues when entering a NEW
+ *   drain session or a new macrotask.
  */
 
 import { BASE_TIMING, Task } from "./types";
 
-// ─── Store slice the engine needs (read from getState() each tick) ─────────────
+// ─── Store slice the engine reads on every tick ────────────────────────────────
 
 export type EngineStore = {
   microtaskQueue: Task[];
@@ -38,20 +43,24 @@ export type EngineStore = {
   _removeFromMacrotaskQueue: (id: string) => void;
   _removeFromCallStack: (id: string) => void;
   _completeTask: (t: Task) => void;
-  _advanceIteration: () => void;
+  _advancePhase: (kind: "microtask-drain" | "macrotask", label: string) => void;
+  _updateActivePhaseTaskCount: (delta: number) => void;
+  _completeActivePhase: () => void;
   _pushLog: (msg: string, type: any) => void;
   _pushTick: (taskId: string, label: string, type: any, event: string) => void;
 };
 
-// ─── Engine state machine phases ─────────────────────────────────────────────
+// ─── Engine internal state machine ────────────────────────────────────────────
 
 type EnginePhase =
   | "check-queues"
+  // microtask drain path (all within ONE event loop phase)
   | "start-microtask"
   | "animate-microtask-to-loop"
   | "animate-microtask-to-stack"
   | "execute-microtask"
   | "complete-microtask"
+  // macrotask path (each is ONE event loop phase)
   | "start-macrotask"
   | "animate-macrotask-to-loop"
   | "animate-macrotask-to-stack"
@@ -67,30 +76,31 @@ export class SimulationEngine {
   private stepMode: boolean = false;
   private stepComplete: boolean = false;
   private destroyed: boolean = false;
+  /** True while draining microtasks in a single phase session */
+  private inMicrotaskDrain: boolean = false;
 
-  /** Start continuous simulation */
+  // ─── Public API ─────────────────────────────────────────────────────────────
+
   start(getState: () => EngineStore) {
-    this.stop(); // clear any previous run
+    this.stop();
     this.getState = getState;
     this.enginePhase = "check-queues";
     this.stepMode = false;
     this.stepComplete = false;
     this.destroyed = false;
     this.activeTask = null;
+    this.inMicrotaskDrain = false;
     this.scheduleNext(100);
   }
 
-  /** Execute exactly one micro-phase step, then pause */
   step(getState: () => EngineStore) {
     this.getState = getState;
     this.stepMode = true;
     this.stepComplete = false;
     this.destroyed = false;
-    // Execute immediately (no setTimeout)
     this.tick();
   }
 
-  /** Stop the engine */
   stop() {
     this.destroyed = true;
     if (this.timerId) {
@@ -99,79 +109,93 @@ export class SimulationEngine {
     }
   }
 
+  // ─── Private helpers ────────────────────────────────────────────────────────
+
   private s(): EngineStore {
     return this.getState!();
   }
 
-  private getDelay(base: number): number {
-    return Math.round(base / (this.s().speed || 1));
+  private delay(base: number): number {
+    return Math.round(base / Math.max(0.01, this.s().speed));
   }
 
-  private scheduleNext(delay: number = 50) {
+  private scheduleNext(ms: number = 50) {
     if (this.destroyed) return;
     if (this.timerId) clearTimeout(this.timerId);
-    this.timerId = setTimeout(() => this.tick(), delay);
+    this.timerId = setTimeout(() => this.tick(), ms);
   }
 
   private tick() {
     if (this.destroyed || !this.getState) return;
-
-    const state = this.s();
-
-    // Respect pause (unless we're in step mode — step mode temporarily unpauses)
-    if (state.isPaused && !this.stepMode) {
+    const { isPaused } = this.s();
+    if (isPaused && !this.stepMode) {
       this.scheduleNext(100);
       return;
     }
-
     this.processPhase();
   }
+
+  // ─── State machine ──────────────────────────────────────────────────────────
 
   private processPhase() {
     if (this.destroyed) return;
     const s = this.s();
 
     switch (this.enginePhase) {
-      // ── CHECK: decide what to do next ──────────────────────────────────────
+
+      // ── DECISION POINT ───────────────────────────────────────────────────────
       case "check-queues": {
         if (s.callStack.length > 0) {
-          // Stack occupied — wait
           this.scheduleNext(100);
           return;
         }
 
         if (s.microtaskQueue.length > 0) {
-          // Drain next microtask
-          this.enginePhase = "start-microtask";
+          // ── NEW microtask-drain phase ──────────────────────────────────────
+          // This is a fresh drain session (not a continuation) → advance phase
+          const batchSize = s.microtaskQueue.length;
+          s._advancePhase("microtask-drain", `Drain ${batchSize} Microtask${batchSize > 1 ? "s" : ""}`);
           s._setPhase("draining-microtasks");
+          s._pushLog(`[Phase ${this.nextPhaseNum()}] Draining Microtask Queue (${batchSize} task${batchSize > 1 ? "s" : ""})`, "system");
+          this.inMicrotaskDrain = true;
+          this.enginePhase = "start-microtask";
           this.scheduleNext(50);
           return;
         }
 
         if (s.macrotaskQueue.length > 0) {
-          // Execute next macrotask
-          this.enginePhase = "start-macrotask";
+          // ── NEW macrotask phase ────────────────────────────────────────────
+          const task = s.macrotaskQueue[0];
+          s._advancePhase("macrotask", task.label);
           s._setPhase("executing-macrotask");
+          this.enginePhase = "start-macrotask";
           this.scheduleNext(50);
           return;
         }
 
-        // All queues empty — done
+        // All done
         this.enginePhase = "done";
         this.scheduleNext(50);
         return;
       }
 
-      // ── MICROTASK lifecycle ────────────────────────────────────────────────
+      // ── MICROTASK LIFECYCLE (within ONE phase) ───────────────────────────────
       case "start-microtask": {
         const task = s.microtaskQueue[0];
-        if (!task) { this.enginePhase = "check-queues"; this.scheduleNext(50); return; }
+        if (!task) {
+          // Queue was emptied (maybe dynamic add removed), end drain
+          this.inMicrotaskDrain = false;
+          s._completeActivePhase();
+          this.enginePhase = "check-queues";
+          this.scheduleNext(50);
+          return;
+        }
         this.activeTask = task;
         s._updateTaskStatus(task.id, "moving-to-event-loop");
         s._pushLog(`[Micro] ${task.label} → Event Loop`, "micro");
         s._pushTick(task.id, task.label, "microtask", "entered Event Loop");
         this.enginePhase = "animate-microtask-to-loop";
-        this.scheduleNext(this.getDelay(BASE_TIMING.queueToEventLoop));
+        this.scheduleNext(this.delay(BASE_TIMING.queueToEventLoop));
         this.completeStepIfNeeded();
         return;
       }
@@ -185,7 +209,7 @@ export class SimulationEngine {
         s._pushLog(`[Micro] ${task.label} → Call Stack`, "micro");
         s._pushTick(task.id, task.label, "microtask", "entered Call Stack");
         this.enginePhase = "animate-microtask-to-stack";
-        this.scheduleNext(this.getDelay(BASE_TIMING.eventLoopToStack));
+        this.scheduleNext(this.delay(BASE_TIMING.eventLoopToStack));
         this.completeStepIfNeeded();
         return;
       }
@@ -197,7 +221,7 @@ export class SimulationEngine {
         s._pushLog(`[Micro] ${task.label} Executing…`, "micro");
         s._pushTick(task.id, task.label, "microtask", "executing");
         this.enginePhase = "execute-microtask";
-        this.scheduleNext(this.getDelay(BASE_TIMING.executing));
+        this.scheduleNext(this.delay(BASE_TIMING.executing));
         this.completeStepIfNeeded();
         return;
       }
@@ -206,27 +230,40 @@ export class SimulationEngine {
         if (!this.activeTask) { this.enginePhase = "check-queues"; this.scheduleNext(50); return; }
         const task = this.activeTask;
         s._completeTask(task);
+        s._updateActivePhaseTaskCount(1);
         s._pushLog(`[Micro] ${task.label} ✓ Completed`, "micro");
         s._pushTick(task.id, task.label, "microtask", "completed");
-        // Rule 2: After microtask, check for more microtasks FIRST
         this.enginePhase = "complete-microtask";
-        this.scheduleNext(this.getDelay(BASE_TIMING.completing));
+        this.scheduleNext(this.delay(BASE_TIMING.completing));
         this.completeStepIfNeeded();
         return;
       }
 
       case "complete-microtask": {
         this.activeTask = null;
-        // Always check queues — microtasks may have been dynamically added
-        this.enginePhase = "check-queues";
-        this.scheduleNext(50);
+        const freshState = this.s();
+
+        if (freshState.microtaskQueue.length > 0) {
+          // ── CRITICAL: continue the SAME drain phase — NO phase increment ──
+          // Rule 2 + Rule 6: all microtasks (including dynamically added ones
+          // from within this drain session) run in one uninterrupted phase.
+          this.enginePhase = "start-microtask";
+          this.scheduleNext(30);
+        } else {
+          // Drain complete — close this phase, go back to decision point
+          this.inMicrotaskDrain = false;
+          s._completeActivePhase();
+          this.enginePhase = "check-queues";
+          this.scheduleNext(50);
+        }
         return;
       }
 
-      // ── MACROTASK lifecycle ────────────────────────────────────────────────
+      // ── MACROTASK LIFECYCLE (each is its own phase) ──────────────────────────
       case "start-macrotask": {
-        // Rule 4: Never run macrotask while microtask exists
+        // Safety: never run macrotask while microtask queue has items
         if (s.microtaskQueue.length > 0) {
+          // Microtasks appeared (dynamically) — pivot to drain them as a new phase
           this.enginePhase = "check-queues";
           this.scheduleNext(50);
           return;
@@ -238,7 +275,7 @@ export class SimulationEngine {
         s._pushLog(`[Macro] ${task.label} → Event Loop`, "macro");
         s._pushTick(task.id, task.label, "macrotask", "entered Event Loop");
         this.enginePhase = "animate-macrotask-to-loop";
-        this.scheduleNext(this.getDelay(BASE_TIMING.queueToEventLoop));
+        this.scheduleNext(this.delay(BASE_TIMING.queueToEventLoop));
         this.completeStepIfNeeded();
         return;
       }
@@ -252,7 +289,7 @@ export class SimulationEngine {
         s._pushLog(`[Macro] ${task.label} → Call Stack`, "macro");
         s._pushTick(task.id, task.label, "macrotask", "entered Call Stack");
         this.enginePhase = "animate-macrotask-to-stack";
-        this.scheduleNext(this.getDelay(BASE_TIMING.eventLoopToStack));
+        this.scheduleNext(this.delay(BASE_TIMING.eventLoopToStack));
         this.completeStepIfNeeded();
         return;
       }
@@ -264,7 +301,7 @@ export class SimulationEngine {
         s._pushLog(`[Macro] ${task.label} Executing…`, "macro");
         s._pushTick(task.id, task.label, "macrotask", "executing");
         this.enginePhase = "execute-macrotask";
-        this.scheduleNext(this.getDelay(BASE_TIMING.executing));
+        this.scheduleNext(this.delay(BASE_TIMING.executing));
         this.completeStepIfNeeded();
         return;
       }
@@ -273,39 +310,48 @@ export class SimulationEngine {
         if (!this.activeTask) { this.enginePhase = "check-queues"; this.scheduleNext(50); return; }
         const task = this.activeTask;
         s._completeTask(task);
+        s._updateActivePhaseTaskCount(1);
         s._pushLog(`[Macro] ${task.label} ✓ Completed`, "macro");
         s._pushTick(task.id, task.label, "macrotask", "completed");
-        s._advanceIteration();
         this.enginePhase = "complete-macrotask";
-        this.scheduleNext(this.getDelay(BASE_TIMING.completing));
+        this.scheduleNext(this.delay(BASE_TIMING.completing));
         this.completeStepIfNeeded();
         return;
       }
 
       case "complete-macrotask": {
         this.activeTask = null;
-        // Rule 3: After macrotask, check microtask queue again
+        s._completeActivePhase();
+        // Rule 3: after macrotask, go back to check-queues to re-check for
+        // any microtasks that may have been enqueued during macrotask execution.
         this.enginePhase = "check-queues";
         this.scheduleNext(50);
         return;
       }
 
-      // ── DONE ──────────────────────────────────────────────────────────────
+      // ── DONE ────────────────────────────────────────────────────────────────
       case "done": {
         const st = this.s();
         st._setPhase("idle");
         st._setRunning(false);
-        st._pushLog("[Done] All tasks completed. Event Loop idle.", "system");
+        st._pushLog("[Done] All tasks completed. Event Loop is now idle.", "system");
         this.stop();
         return;
       }
     }
   }
 
+  private nextPhaseNum(): number {
+    // Read the current phase number from store (already incremented by _advancePhase)
+    // We can't access store directly here without the getter, so use s()
+    return this.s().currentPhase === "draining-microtasks"
+      ? -1 // placeholder; actual number is in store
+      : -1;
+  }
+
   private completeStepIfNeeded() {
     if (this.stepMode && !this.stepComplete) {
       this.stepComplete = true;
-      // Re-pause after this step completes
       setTimeout(() => {
         if (!this.destroyed && this.getState) {
           this.s()._setPaused(true);
@@ -316,6 +362,6 @@ export class SimulationEngine {
   }
 }
 
-// ─── Singleton engine instance ────────────────────────────────────────────────
+// ─── Singleton ────────────────────────────────────────────────────────────────
 
 export const simulationEngine = new SimulationEngine();

@@ -5,7 +5,7 @@ import TimelineView from "@/app/_components/bottom/TimelineView";
 import { useRuntimeStore } from "@/app/_lib/store";
 
 export default function TimelinePage() {
-  const { timelineTicks, completedTasks, currentIteration } = useRuntimeStore();
+  const { timelineTicks, completedTasks, currentPhaseNumber } = useRuntimeStore();
 
   return (
     <AppShell>
@@ -30,7 +30,7 @@ export default function TimelinePage() {
           }}
         >
           <h1 style={{ fontSize: 16, fontWeight: 700 }}>Execution Timeline</h1>
-          <div style={{ marginLeft: "auto", display: "flex", gap: 12, fontSize: 12, color: "var(--text-secondary)" }}>
+          <div style={{ display: "flex", gap: 12, fontSize: 12, color: "var(--text-secondary)" }}>
             <span>
               <strong style={{ color: "var(--text-primary)" }}>{timelineTicks.length}</strong> ticks
             </span>
@@ -38,7 +38,7 @@ export default function TimelinePage() {
               <strong style={{ color: "var(--text-primary)" }}>{completedTasks.length}</strong> completed
             </span>
             <span>
-              Iteration <strong style={{ color: "var(--stack-primary)" }}>{currentIteration}</strong>
+              Phase <strong style={{ color: "var(--stack-primary)" }}>{currentPhaseNumber}</strong>
             </span>
           </div>
         </div>
@@ -112,7 +112,7 @@ export default function TimelinePage() {
                         <td style={{ padding: "7px 14px", color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" }}>
                           {tick.tick}
                         </td>
-                        <td style={{ padding: "7px 14px", fontFamily: "JetBrains Mono, monospace", color: tick.taskType === "microtask" ? "#c4b5fd" : "#fcd34d" }}>
+                        <td style={{ padding: "7px 14px", fontFamily: "JetBrains Mono, monospace", color: tick.taskType === "microtask" ? "var(--micro-primary)" : "var(--macro-primary)" }}>
                           {tick.taskLabel}
                         </td>
                         <td style={{ padding: "7px 14px" }}>
