@@ -1,13 +1,13 @@
-/* ─── Google Fonts ─────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Google Fonts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap");
 
 @import "tailwindcss";
 
-/* ─────────────────────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    LIGHT THEME (default)
    Background: Slate / Zinc neutrals
    Accent:     Blue primary, Purple for microtask, Amber for macrotask
-──────────────────────────────────────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .light {
   /* Backgrounds */
   --bg-base:     #f1f5f9;
@@ -26,27 +26,27 @@
   --text-secondary: #475569;
   --text-muted:     #94a3b8;
 
-  /* Microtask — muted violet */
+  /* Microtask â€” muted violet */
   --micro-primary:   #7c3aed;
   --micro-secondary: #6d28d9;
   --micro-glow:      rgba(124, 58, 237, 0.25);
   --micro-bg:        rgba(124, 58, 237, 0.06);
   --micro-text:      #7c3aed;
 
-  /* Macrotask — muted amber */
+  /* Macrotask â€” muted amber */
   --macro-primary:   #d97706;
   --macro-secondary: #b45309;
   --macro-glow:      rgba(217, 119, 6, 0.25);
   --macro-bg:        rgba(217, 119, 6, 0.07);
   --macro-text:      #92400e;
 
-  /* Event Loop — teal */
+  /* Event Loop â€” teal */
   --loop-primary:   #0d9488;
   --loop-secondary: #0f766e;
   --loop-glow:      rgba(13, 148, 136, 0.35);
   --loop-bg:        rgba(13, 148, 136, 0.07);
 
-  /* Call Stack — blue */
+  /* Call Stack â€” blue */
   --stack-primary:   #2563eb;
   --stack-secondary: #1d4ed8;
   --stack-glow:      rgba(37, 99, 235, 0.3);
@@ -72,11 +72,11 @@
   --shadow-lg:  0 10px 15px rgba(0,0,0,0.06), 0 4px 6px rgba(0,0,0,0.05);
 }
 
-/* ─────────────────────────────────────────────────────────────────────────────
+/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    DARK THEME
    Background: deep navy/slate
    Accent:     brighter versions of same palette
-──────────────────────────────────────────────────────────────────────────── */
+â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root,
 .dark {
   --bg-base:     #0a0f1e;
@@ -128,7 +128,7 @@
   --shadow-lg:  0 10px 15px rgba(0,0,0,0.4), 0 4px 6px rgba(0,0,0,0.3);
 }
 
-/* ─── Base Reset ───────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Base Reset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 *,
 *::before,
 *::after {
@@ -152,13 +152,13 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* ─── Scrollbar ────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Scrollbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 ::-webkit-scrollbar        { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track  { background: transparent; }
 ::-webkit-scrollbar-thumb  { background: var(--border-default); border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
-/* ─── Surface cards ─────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Surface cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .surface-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -174,7 +174,7 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-/* ─── Task card colors ─────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Task card colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .task-micro {
   background: var(--micro-bg);
   border: 1px solid rgba(124, 58, 237, 0.25);
@@ -205,7 +205,7 @@ body {
   box-shadow: 0 0 10px var(--macro-glow);
 }
 
-/* ─── Keyframes ─────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Keyframes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes spin-slow   { from { transform: rotate(0deg); }   to { transform: rotate(360deg); } }
 @keyframes pulse-ring  { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.7; transform:scale(1.04); } }
 @keyframes slide-in-right { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
@@ -221,7 +221,7 @@ body {
 @keyframes orbit          { from { transform:rotate(0deg) translateX(58px) rotate(0deg); } to { transform:rotate(360deg) translateX(58px) rotate(-360deg); } }
 @keyframes phase-slide-in { from { opacity:0; transform:translateY(16px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
 
-/* ─── Animation utilities ────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Animation utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .animate-spin-slow   { animation: spin-slow 4s linear infinite; }
 .animate-pulse-ring  { animation: pulse-ring 2s ease-in-out infinite; }
 .animate-slide-right { animation: slide-in-right 0.25s ease forwards; }
@@ -233,7 +233,7 @@ body {
 .animate-float       { animation: float 3s ease-in-out infinite; }
 .animate-task-enter  { animation: task-enter 0.2s cubic-bezier(0.34,1.56,0.64,1) forwards; }
 
-/* ─── Phase badge ────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Phase badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .phase-badge {
   font-size: 10px;
   font-weight: 700;
@@ -243,11 +243,11 @@ body {
   border-radius: 999px;
 }
 
-/* ─── Queue section headers ──────────────────────────────────────────────────── */
+/* â”€â”€â”€ Queue section headers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .queue-header-micro { color: var(--micro-primary); }
 .queue-header-macro { color: var(--macro-primary); }
 
-/* ─── Buttons ────────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -312,7 +312,7 @@ body {
 }
 .btn-danger:hover:not(:disabled) { background: rgba(220,38,38,0.08); border-color: var(--danger); }
 
-/* ─── Nav item ───────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Nav item â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .nav-item {
   display: flex;
   align-items: center;
@@ -340,7 +340,7 @@ body {
   border-color: rgba(96,165,250,0.2);
 }
 
-/* ─── Stat card ──────────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Stat card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .stat-card {
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
@@ -368,7 +368,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* ─── Log terminal ───────────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Log terminal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .log-terminal {
   background: var(--log-bg);
   border: 1px solid var(--border-subtle);
@@ -383,9 +383,12 @@ body {
 .log-entry {
   padding: 2px 0;
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   align-items: baseline;
   animation: slide-in-left 0.15s ease;
+  word-break: break-word;
+  white-space: pre-wrap;
 }
 
 .log-ts      { color: var(--log-timestamp); font-size: 10.5px; flex-shrink: 0; }
@@ -394,7 +397,7 @@ body {
 .log-msg-system { color: #34d399; }
 .log-msg-info   { color: #93c5fd; }
 
-/* ─── Phase timeline node ────────────────────────────────────────────────────── */
+/* â”€â”€â”€ Phase timeline node â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .phase-node {
   display: flex;
   flex-direction: column;
@@ -422,4 +425,373 @@ body {
   flex: 1;
   min-width: 20px;
   transition: background 0.3s ease;
+}
+
+/* â”€â”€â”€ Phase timeline responsive overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (max-width: 1200px) {
+  .phase-node {
+    min-width: 80px !important;
+    gap: 4px !important;
+  }
+  .phase-node-bubble {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 10px !important;
+  }
+  .phase-node-bubble svg {
+    width: 10px !important;
+    height: 10px !important;
+  }
+  .phase-connector {
+    min-width: 10px !important;
+  }
+  .phase-node span {
+    font-size: 9px !important;
+    max-width: 75px !important;
+  }
+}
+
+/* â”€â”€â”€ Desktop Gate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.desktop-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  padding: 24px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.desktop-gate-content {
+  max-width: 480px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.desktop-gate-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid var(--loop-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px var(--loop-glow);
+  animation: glow-pulse 2s ease-in-out infinite, spin-slow 10s linear infinite;
+  background: var(--loop-bg);
+}
+
+.desktop-gate-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-top: 8px;
+}
+
+.desktop-gate-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.desktop-gate-specs {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.desktop-gate-spec-card {
+  flex: 1;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 11px;
+}
+
+.desktop-gate-spec-label {
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.desktop-gate-spec-value {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.app-main-layout {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .desktop-gate {
+    display: none;
+  }
+  .app-main-layout {
+    display: flex;
+  }
+}
+
+/* â”€â”€â”€ Responsive Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (max-width: 1200px) {
+  :root, .light, .dark {
+    --sidebar-width: 68px;
+  }
+  
+  .nav-item {
+    justify-content: center;
+    padding: 10px;
+  }
+  
+  .nav-item span,
+  .nav-item-text,
+  .sidebar-logo-text,
+  .sidebar-nav-header,
+  .sidebar-footer-text {
+    display: none !important;
+  }
+  
+  .sidebar-logo-container {
+    justify-content: center !important;
+    padding: 8px 0 16px !important;
+  }
+  
+  .theme-toggle-btn span {
+    display: none !important;
+  }
+  .theme-toggle-btn {
+    justify-content: center !important;
+    padding: 8px !important;
+  }
+}
+
+
+/* â”€â”€â”€ Main Containers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.sim-main-container {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.sim-center-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* â”€â”€â”€ Control Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.control-panel-container {
+  width: var(--control-width);
+  min-width: var(--control-width);
+  max-width: var(--control-width);
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* â”€â”€â”€ Visualization Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.vis-grid {
+  display: grid;
+  grid-template-columns: 1fr 160px 1fr;
+  grid-template-rows: 1fr 1fr;
+  flex: 1;
+  min-height: 0;
+  gap: 10px;
+  padding: 10px 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.vis-microtask { grid-column: 1; grid-row: 1; min-width: 0; overflow: hidden; }
+.vis-macrotask { grid-column: 1; grid-row: 2; min-width: 0; overflow: hidden; }
+.vis-loop      { grid-column: 2; grid-row: 1 / span 2; min-width: 0; overflow: visible; display: flex; align-items: center; justify-content: center; }
+.vis-stack     { grid-column: 3; grid-row: 1 / span 2; min-width: 0; overflow: hidden; }
+
+.connecting-lines-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+/* â”€â”€â”€ Stats Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.stats-panel-container {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 12px 16px;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+/* â”€â”€â”€ Bottom Panels (Timeline + Logs) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.bottom-sections-container {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 12px;
+  height: 180px;
+  flex-shrink: 0;
+  min-height: 0;
+  padding: 0 12px 12px 12px;
+}
+
+.timeline-section-card, .logs-section-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.bottom-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  flex-shrink: 0;
+}
+
+.timeline-wrapper, .logs-wrapper {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* â”€â”€â”€ Responsive Breakpoints â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
+@media (max-width: 1440px) {
+  .stats-panel-container {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 1280px) {
+  :root, .light, .dark {
+    --control-width: 220px;
+  }
+
+  .vis-grid {
+    grid-template-columns: 1fr 140px 1fr;
+    gap: 8px;
+    padding: 8px 10px;
+  }
+}
+
+/* Additional 1200px tweaks (sidebar collapse already above) */
+@media (max-width: 1200px) {
+  :root, .light, .dark {
+    --control-width: 200px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bottom-sections-container {
+    grid-template-columns: 1fr;
+    height: auto;
+    flex-shrink: 0;
+    gap: 12px;
+  }
+
+  .timeline-section-card {
+    height: 130px;
+  }
+
+  .logs-section-card {
+    height: 180px;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root, .light, .dark {
+    --control-width: 180px;
+  }
+
+  .vis-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    height: auto;
+    overflow-y: auto;
+    flex: none;
+    gap: 10px;
+    padding: 10px 10px;
+  }
+
+  .vis-loop      { grid-column: 1; grid-row: 1; }
+  .vis-stack     { grid-column: 2; grid-row: 1; }
+  .vis-microtask { grid-column: 1; grid-row: 2; }
+  .vis-macrotask { grid-column: 2; grid-row: 2; }
+
+  .connecting-lines-svg { display: none; }
+
+  .sim-center-column {
+    overflow-y: auto;
+  }
+
+  /* Fix: use static positioning to prevent header overlap on buttons */
+  .control-panel-container {
+    position: static !important;
+    width: var(--control-width);
+    min-width: var(--control-width);
+    max-width: var(--control-width);
+    flex-shrink: 0;
+    overflow-y: auto;
+    z-index: 1;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile gate: below 768px show desktop-required message */
+@media (max-width: 767px) {
+  .desktop-gate {
+    display: flex !important;
+  }
+  .app-main-layout {
+    display: none !important;
+  }
 }

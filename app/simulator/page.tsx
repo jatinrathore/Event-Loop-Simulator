@@ -3,7 +3,8 @@
 import AppShell from "@/app/_components/layout/AppShell";
 import ControlPanel from "@/app/_components/controls/ControlPanel";
 import VisualizationArea from "@/app/_components/visualization/VisualizationArea";
-import BottomPanel from "@/app/_components/bottom/BottomPanel";
+import TimelineView from "@/app/_components/bottom/TimelineView";
+import ExecutionLogs from "@/app/_components/bottom/ExecutionLogs";
 import StatsPanel from "@/app/_components/stats/StatsPanel";
 
 export default function SimulatorPage() {
@@ -49,42 +50,31 @@ export default function SimulatorPage() {
         </div>
 
         {/* Main content area */}
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            minHeight: 0,
-            overflow: "hidden",
-          }}
-        >
+        <div className="sim-main-container">
           {/* Left: Control Panel */}
           <ControlPanel />
 
-          {/* Center: Visualization */}
-          <div
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              minWidth: 0,
-              overflow: "hidden",
-            }}
-          >
-            <VisualizationArea />
-            <BottomPanel />
-          </div>
-
-          {/* Right: Stats Panel */}
-          <div
-            style={{
-              width: 220,
-              minWidth: 220,
-              borderLeft: "1px solid var(--border-subtle)",
-              background: "var(--bg-surface)",
-              overflow: "auto",
-            }}
-          >
+          {/* Center Content Column */}
+          <div className="sim-center-column">
             <StatsPanel />
+            <VisualizationArea />
+            
+            {/* Bottom Timeline and Logs both visible simultaneously */}
+            <div className="bottom-sections-container">
+              <div className="timeline-section-card">
+                <div className="bottom-section-title">📊 Phase Timeline</div>
+                <div className="timeline-wrapper">
+                  <TimelineView />
+                </div>
+              </div>
+              
+              <div className="logs-section-card">
+                <div className="bottom-section-title">🖥️ Execution Logs</div>
+                <div className="logs-wrapper">
+                  <ExecutionLogs />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

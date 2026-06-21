@@ -61,26 +61,19 @@ export default function StatsPanel() {
       : "var(--success)";
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 0,
-        height: "100%",
-        overflow: "auto",
-      }}
-    >
+    <div className="stats-panel-container">
       {/* Educational Phase Overlay */}
       <div
         style={{
-          padding: "16px",
           background: phase.bg,
-          borderBottom: "1px solid var(--border-subtle)",
+          border: "1px solid var(--border-subtle)",
+          borderRadius: "10px",
+          padding: "12px 14px",
           display: "flex",
           flexDirection: "column",
           gap: 6,
-          flexShrink: 0,
           transition: "background 0.4s ease",
+          justifyContent: "center",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -97,7 +90,7 @@ export default function StatsPanel() {
           />
           <span
             style={{
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: 700,
               color: phase.color,
               transition: "color 0.3s ease",
@@ -106,145 +99,64 @@ export default function StatsPanel() {
             {phase.label}
           </span>
         </div>
-        <p style={{ fontSize: 11, color: "var(--text-secondary)", lineHeight: 1.4, margin: 0 }}>
+        <p style={{ fontSize: 10.5, color: "var(--text-secondary)", lineHeight: 1.3, margin: 0 }}>
           {phase.desc}
         </p>
       </div>
 
-      {/* Prominent Phase & Executed Counts */}
-      <div
-        style={{
-          padding: "16px 16px 8px 16px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 12,
-        }}
-      >
-        <div className="stat-card" style={{ padding: "16px" }}>
-          <div className="stat-label" style={{ fontSize: "10px", fontWeight: 700 }}>Event Loop Iteration</div>
-          <div className="stat-value" style={{ color: "var(--loop-primary)", fontSize: "36px", marginTop: 4 }}>
+      {/* Stats Cards Grid (Exactly 4 cards) */}
+      <div className="stats-grid">
+        {/* Card 1: Event Loop Phase */}
+        <div className="stat-card" style={{ padding: "10px 14px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div className="stat-label" style={{ fontSize: "9px" }}>Event Loop Iteration</div>
+          <div className="stat-value" style={{ color: "var(--loop-primary)", fontSize: "24px", marginTop: 2 }}>
             {currentPhaseNumber}
           </div>
-          <div style={{ fontSize: "10px", color: "var(--text-muted)", marginTop: 2 }}>
-            Drain session or individual macrotask
+        </div>
+
+        {/* Card 2: Tasks Executed */}
+        <div className="stat-card" style={{ padding: "10px 14px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div className="stat-label" style={{ fontSize: "9px" }}>Tasks Executed</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
+            <div className="stat-value" style={{ color: "var(--stack-primary)", fontSize: "24px" }}>
+              {tasksExecuted}
+            </div>
+            {callStack.length > 0 && (
+              <span style={{ fontSize: 9, fontWeight: 600, color: "var(--stack-primary)", background: "var(--stack-bg)", padding: "1px 4px", borderRadius: 4 }}>
+                Stack: {callStack.length}
+              </span>
+            )}
           </div>
         </div>
 
-        <div className="stat-card" style={{ padding: "16px" }}>
-          <div className="stat-label" style={{ fontSize: "10px", fontWeight: 700 }}>Tasks Executed</div>
-          <div className="stat-value" style={{ color: "var(--stack-primary)", fontSize: "36px", marginTop: 4 }}>
-            {tasksExecuted}
-          </div>
-          <div style={{ fontSize: "10px", color: "var(--text-muted)", marginTop: 2 }}>
-            Total completed tasks
-          </div>
-        </div>
-      </div>
-
-      {/* Remaining Stats Grid */}
-      <div
-        style={{
-          padding: "8px 16px 16px 16px",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 10,
-        }}
-      >
-        <div className="stat-card" style={{ padding: "10px 12px" }}>
-          <div className="stat-label">⚡ Microtasks</div>
+        {/* Card 3: Microtasks */}
+        <div className="stat-card" style={{ padding: "10px 14px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div className="stat-label" style={{ fontSize: "9px" }}>⚡ Microtasks Left</div>
           <div
             className="stat-value"
-            style={{ color: microtaskQueue.length > 0 ? "var(--micro-primary)" : "var(--text-muted)", fontSize: "20px", marginTop: 2 }}
+            style={{ color: microtaskQueue.length > 0 ? "var(--micro-primary)" : "var(--text-muted)", fontSize: "24px", marginTop: 2 }}
           >
             {microtaskQueue.length}
           </div>
         </div>
 
-        <div className="stat-card" style={{ padding: "10px 12px" }}>
-          <div className="stat-label">⏱ Macrotasks</div>
-          <div
-            className="stat-value"
-            style={{ color: macrotaskQueue.length > 0 ? "var(--macro-primary)" : "var(--text-muted)", fontSize: "20px", marginTop: 2 }}
-          >
-            {macrotaskQueue.length}
-          </div>
-        </div>
-
-        <div className="stat-card" style={{ gridColumn: "1 / -1", padding: "10px 12px" }}>
-          <div className="stat-label">Simulation Status</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: statusColor, marginTop: 4, display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: statusColor }} />
-            {statusLabel}
+        {/* Card 4: Macrotasks */}
+        <div className="stat-card" style={{ padding: "10px 14px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <div className="stat-label" style={{ fontSize: "9px" }}>⏱ Macrotasks Left</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
+            <div
+              className="stat-value"
+              style={{ color: macrotaskQueue.length > 0 ? "var(--macro-primary)" : "var(--text-muted)", fontSize: "24px" }}
+            >
+              {macrotaskQueue.length}
+            </div>
+            <span style={{ fontSize: 9, fontWeight: 700, color: statusColor, display: "flex", alignItems: "center", gap: 3 }}>
+              <span style={{ display: "inline-block", width: 5, height: 5, borderRadius: "50%", background: statusColor }} />
+              {statusLabel}
+            </span>
           </div>
         </div>
       </div>
-
-      {/* Call Stack size */}
-      {callStack.length > 0 && (
-        <div
-          style={{
-            margin: "0 16px 16px",
-            padding: "8px 12px",
-            borderRadius: 8,
-            background: "var(--stack-bg)",
-            border: "1px solid rgba(37, 99, 235, 0.2)",
-          }}
-        >
-          <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-            Call Stack Depth
-          </div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: "var(--stack-primary)" }}>
-            {callStack.length}
-          </div>
-        </div>
-      )}
-
-      {/* Completed Tasks mini list */}
-      {completedTasks.length > 0 && (
-        <div style={{ padding: "0 16px 16px", flex: 1, overflow: "hidden", minHeight: 140 }}>
-          <div
-            style={{
-              fontSize: 10,
-              fontWeight: 600,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              color: "var(--text-muted)",
-              marginBottom: 8,
-            }}
-          >
-            Completed History
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 4, overflow: "auto", maxHeight: 120 }}>
-            {completedTasks.slice(0, 8).map((task) => (
-              <div
-                key={task.id}
-                className="animate-task-enter"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "4px 8px",
-                  borderRadius: 6,
-                  background: "var(--bg-elevated)",
-                  fontSize: 10,
-                  opacity: 0.7,
-                }}
-              >
-                <span style={{ color: "var(--success)" }}>✓</span>
-                <span
-                  style={{
-                    fontFamily: "JetBrains Mono, monospace",
-                    color: task.type === "microtask" ? "var(--micro-primary)" : "var(--macro-primary)",
-                    fontSize: 10,
-                  }}
-                >
-                  {task.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

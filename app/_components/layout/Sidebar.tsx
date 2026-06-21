@@ -68,48 +68,50 @@ export default function Sidebar() {
     >
       {/* Logo */}
       <div
+        className="sidebar-logo-container"
         style={{
           padding: "8px 10px 20px",
           borderBottom: "1px solid var(--border-subtle)",
           marginBottom: "8px",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          {/* Animated event loop icon */}
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: "50%",
-              border: "2px solid var(--loop-primary)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 0 12px var(--loop-glow)",
-              animation: "glow-pulse 2s ease-in-out infinite",
-              flexShrink: 0,
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--loop-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="23 4 23 10 17 10" />
-              <polyline points="1 20 1 14 7 14" />
-              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-            </svg>
+        {/* Animated event loop icon */}
+        <div
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+            border: "2px solid var(--loop-primary)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 0 12px var(--loop-glow)",
+            animation: "glow-pulse 2s ease-in-out infinite",
+            flexShrink: 0,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--loop-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="23 4 23 10 17 10" />
+            <polyline points="1 20 1 14 7 14" />
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+          </svg>
+        </div>
+        <div className="sidebar-logo-text">
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.2 }}>
+            Event Loop
           </div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.2 }}>
-              Event Loop
-            </div>
-            <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 500 }}>
-              Visualizer v1.0
-            </div>
+          <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 500 }}>
+            Visualizer v1.0
           </div>
         </div>
       </div>
 
       {/* Navigation */}
       <nav style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px" }}>
-        <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", padding: "4px 12px 8px" }}>
+        <div className="sidebar-nav-header" style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", padding: "4px 12px 8px" }}>
           Navigation
         </div>
         {NAV_ITEMS.map((item) => {
@@ -121,7 +123,7 @@ export default function Sidebar() {
               className={`nav-item ${isActive ? "active" : ""}`}
             >
               {item.icon}
-              {item.label}
+              <span className="nav-item-text">{item.label}</span>
             </Link>
           );
         })}
@@ -138,7 +140,7 @@ export default function Sidebar() {
         }}
       >
         <button
-          className="btn btn-ghost"
+          className="btn btn-ghost theme-toggle-btn"
           style={{
             width: "100%",
             justifyContent: "flex-start",
@@ -176,6 +178,7 @@ export default function Sidebar() {
 
       {/* Footer badge */}
       <div
+        className="sidebar-footer-text"
         style={{
           padding: "10px 12px",
           borderTop: "1px solid var(--border-subtle)",

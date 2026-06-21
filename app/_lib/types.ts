@@ -97,10 +97,10 @@ export type SpeedMultiplier = (typeof SPEED_MULTIPLIERS)[number];
 // ─── Timing (at 1x speed, ms) ─────────────────────────────────────────────────
 
 export const BASE_TIMING = {
-  queueToEventLoop: 700,
-  eventLoopToStack: 700,
-  executing: 500,
-  completing: 500,
+  queueToEventLoop: 300,
+  eventLoopToStack: 200,
+  executing: 600,
+  completing: 400,
 } as const;
 
 // ─── Microtask label variants ─────────────────────────────────────────────────

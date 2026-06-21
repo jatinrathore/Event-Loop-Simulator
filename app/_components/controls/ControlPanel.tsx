@@ -83,19 +83,7 @@ export default function ControlPanel() {
   const canStep = (!isRunning && hasQueued) || (isRunning && isPaused);
 
   return (
-    <div
-      style={{
-        width: "var(--control-width)",
-        minWidth: "var(--control-width)",
-        background: "var(--bg-surface)",
-        borderRight: "1px solid var(--border-subtle)",
-        display: "flex",
-        flexDirection: "column",
-        gap: 0,
-        height: "100%",
-        overflow: "auto",
-      }}
-    >
+    <div className="control-panel-container">
       {/* Header */}
       <div
         style={{

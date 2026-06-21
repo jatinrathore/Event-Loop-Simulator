@@ -7,80 +7,107 @@ import CallStack from "./CallStack";
 
 export default function VisualizationArea() {
   return (
-    <div
-      style={{
-        flex: 1,
-        display: "grid",
-        gridTemplateColumns: "1fr 200px 1fr",
-        gridTemplateRows: "1fr 1fr",
-        gap: 12,
-        padding: "12px",
-        minHeight: 0,
-        overflow: "hidden",
-      }}
-    >
-      {/* Row 1, Col 1: Microtask Queue */}
-      <div style={{ gridColumn: 1, gridRow: 1, minHeight: 0, overflow: "hidden" }}>
+    <div className="vis-grid">
+      {/* Col 1 Queues */}
+      <div className="vis-microtask">
         <MicrotaskQueue />
       </div>
 
-      {/* Row 1+2, Col 2: Event Loop (spans both rows) */}
-      <div
-        style={{
-          gridColumn: 2,
-          gridRow: "1 / 3",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          position: "relative",
-        }}
-      >
-        {/* Connecting lines */}
-        <svg
+      {/* Col 2: Event Loop (spans both rows) — connector arrows rendered here */}
+      <div className="vis-loop" style={{ position: "relative" }}>
+        {/* Arrow: Queue → Event Loop (left side) */}
+        <div
           style={{
             position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
+            top: "25%",
+            transform: "translateY(-50%)",
+            left: "-32px",
+            width: "32px",
+            height: "2px",
+            display: "flex",
+            alignItems: "center",
             pointerEvents: "none",
-            overflow: "visible",
+            zIndex: 2,
           }}
-          viewBox="0 0 200 400"
-          preserveAspectRatio="none"
         >
-          {/* Left arrows pointing to Event Loop */}
-          <defs>
-            <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-              <polygon points="0 0, 6 3, 0 6" fill="rgba(255,255,255,0.1)" />
-            </marker>
-          </defs>
-          {/* Micro → Loop */}
-          <line x1="0" y1="100" x2="80" y2="200" stroke="rgba(139,92,246,0.2)" strokeWidth="1.5" strokeDasharray="4 3" markerEnd="url(#arrowhead)" />
-          {/* Macro → Loop */}
-          <line x1="0" y1="300" x2="80" y2="200" stroke="rgba(245,158,11,0.2)" strokeWidth="1.5" strokeDasharray="4 3" markerEnd="url(#arrowhead)" />
-          {/* Loop → Stack */}
-          <line x1="120" y1="200" x2="200" y2="200" stroke="rgba(59,130,246,0.2)" strokeWidth="1.5" strokeDasharray="4 3" markerEnd="url(#arrowhead)" />
-        </svg>
+          <div
+            style={{
+              width: "100%",
+              height: "1.5px",
+              background: "linear-gradient(90deg, rgba(139,92,246,0.15), rgba(139,92,246,0.5))",
+              backgroundImage: "repeating-linear-gradient(90deg, rgba(139,92,246,0.5) 0px, rgba(139,92,246,0.5) 5px, transparent 5px, transparent 9px)",
+            }}
+          />
+          <svg width="7" height="10" viewBox="0 0 7 10" fill="none" style={{ flexShrink: 0, marginLeft: -1 }}>
+            <polygon points="0,0 7,5 0,10" fill="rgba(139,92,246,0.5)" />
+          </svg>
+        </div>
+        {/* Arrow: Queue → Event Loop (bottom - macrotask side) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "75%",
+            transform: "translateY(-50%)",
+            left: "-32px",
+            width: "32px",
+            height: "2px",
+            display: "flex",
+            alignItems: "center",
+            pointerEvents: "none",
+            zIndex: 2,
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              height: "1.5px",
+              backgroundImage: "repeating-linear-gradient(90deg, rgba(245,158,11,0.5) 0px, rgba(245,158,11,0.5) 5px, transparent 5px, transparent 9px)",
+            }}
+          />
+          <svg width="7" height="10" viewBox="0 0 7 10" fill="none" style={{ flexShrink: 0, marginLeft: -1 }}>
+            <polygon points="0,0 7,5 0,10" fill="rgba(245,158,11,0.5)" />
+          </svg>
+        </div>
+        {/* Arrow: Event Loop → Call Stack (right side, centered vertically) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            right: "-32px",
+            width: "32px",
+            height: "2px",
+            transform: "translateY(-50%)",
+            display: "flex",
+            alignItems: "center",
+            pointerEvents: "none",
+            zIndex: 2,
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              height: "1.5px",
+              backgroundImage: "repeating-linear-gradient(90deg, rgba(96,165,250,0.5) 0px, rgba(96,165,250,0.5) 5px, transparent 5px, transparent 9px)",
+            }}
+          />
+          <svg width="7" height="10" viewBox="0 0 7 10" fill="none" style={{ flexShrink: 0, marginLeft: -1 }}>
+            <polygon points="0,0 7,5 0,10" fill="rgba(96,165,250,0.5)" />
+          </svg>
+        </div>
 
         <EventLoopNode />
       </div>
 
-      {/* Row 1+2, Col 3: Call Stack (spans both rows) */}
-      <div
-        style={{
-          gridColumn: 3,
-          gridRow: "1 / 3",
-          minHeight: 0,
-          overflow: "hidden",
-        }}
-      >
+      {/* Col 3: Call Stack (spans both rows) */}
+      <div className="vis-stack">
         <CallStack />
       </div>
 
       {/* Row 2, Col 1: Macrotask Queue */}
-      <div style={{ gridColumn: 1, gridRow: 2, minHeight: 0, overflow: "hidden" }}>
+      <div className="vis-macrotask">
         <MacrotaskQueue />
       </div>
     </div>
   );
 }
+

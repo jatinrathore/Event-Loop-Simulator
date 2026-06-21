@@ -48,6 +48,7 @@ export default function TaskCard({ task, size = "md", index = 0 }: TaskCardProps
       style={{
         display: "inline-flex",
         alignItems: "center",
+        flexWrap: "wrap",
         gap: size === "sm" ? 5 : 7,
         padding: size === "sm" ? "4px 8px" : "6px 12px",
         borderRadius: 8,
@@ -57,6 +58,7 @@ export default function TaskCard({ task, size = "md", index = 0 }: TaskCardProps
         userSelect: "none",
         animationDelay: `${index * 0.05}s`,
         transition: "all 0.3s ease",
+        minWidth: 0,
         ...STATUS_STYLES[task.status],
       }}
     >
@@ -93,6 +95,9 @@ export default function TaskCard({ task, size = "md", index = 0 }: TaskCardProps
         style={{
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: size === "sm" ? 10 : 11,
+          wordBreak: "break-word",
+          whiteSpace: "normal",
+          minWidth: 0,
         }}
       >
         {task.label}

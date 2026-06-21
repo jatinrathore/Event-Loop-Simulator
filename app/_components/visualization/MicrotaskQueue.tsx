@@ -138,6 +138,7 @@ export default function MicrotaskQueue() {
                 alignItems: "center",
                 gap: 6,
                 animationDelay: `${i * 0.04}s`,
+                minWidth: 0,
               }}
             >
               <span
