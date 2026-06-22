@@ -1,82 +1,59 @@
-/* â”€â”€â”€ Google Fonts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap");
 
 @import "tailwindcss";
-
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-   LIGHT THEME (default)
-   Background: Slate / Zinc neutrals
-   Accent:     Blue primary, Purple for microtask, Amber for macrotask
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.light {
-  /* Backgrounds */
+/* .light {
   --bg-base:     #f1f5f9;
   --bg-surface:  #ffffff;
   --bg-elevated: #f8fafc;
   --bg-hover:    #e2e8f0;
   --bg-sidebar:  #ffffff;
 
-  /* Borders */
   --border-subtle:  #e2e8f0;
   --border-default: #cbd5e1;
   --border-strong:  #94a3b8;
 
-  /* Text */
   --text-primary:   #0f172a;
   --text-secondary: #475569;
   --text-muted:     #94a3b8;
 
-  /* Microtask â€” muted violet */
   --micro-primary:   #7c3aed;
   --micro-secondary: #6d28d9;
   --micro-glow:      rgba(124, 58, 237, 0.25);
   --micro-bg:        rgba(124, 58, 237, 0.06);
   --micro-text:      #7c3aed;
 
-  /* Macrotask â€” muted amber */
   --macro-primary:   #d97706;
   --macro-secondary: #b45309;
   --macro-glow:      rgba(217, 119, 6, 0.25);
   --macro-bg:        rgba(217, 119, 6, 0.07);
   --macro-text:      #92400e;
 
-  /* Event Loop â€” teal */
   --loop-primary:   #0d9488;
   --loop-secondary: #0f766e;
   --loop-glow:      rgba(13, 148, 136, 0.35);
   --loop-bg:        rgba(13, 148, 136, 0.07);
 
-  /* Call Stack â€” blue */
   --stack-primary:   #2563eb;
   --stack-secondary: #1d4ed8;
   --stack-glow:      rgba(37, 99, 235, 0.3);
   --stack-bg:        rgba(37, 99, 235, 0.06);
 
-  /* System */
   --success:  #16a34a;
   --warning:  #d97706;
   --danger:   #dc2626;
   --info:     #2563eb;
 
-  /* Log terminal */
   --log-bg:         #1e293b;
   --log-timestamp:  #64748b;
 
-  /* Layout */
   --sidebar-width:  220px;
   --control-width:  260px;
 
-  /* Shadow */
   --shadow-sm:  0 1px 2px rgba(0,0,0,0.05);
   --shadow-md:  0 4px 6px rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.06);
   --shadow-lg:  0 10px 15px rgba(0,0,0,0.06), 0 4px 6px rgba(0,0,0,0.05);
-}
+} */
 
-/* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-   DARK THEME
-   Background: deep navy/slate
-   Accent:     brighter versions of same palette
-â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root,
 .dark {
   --bg-base:     #0a0f1e;
@@ -128,7 +105,6 @@
   --shadow-lg:  0 10px 15px rgba(0,0,0,0.4), 0 4px 6px rgba(0,0,0,0.3);
 }
 
-/* â”€â”€â”€ Base Reset â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 *,
 *::before,
 *::after {
@@ -152,13 +128,13 @@ body {
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* â”€â”€â”€ Scrollbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
 ::-webkit-scrollbar        { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track  { background: transparent; }
 ::-webkit-scrollbar-thumb  { background: var(--border-default); border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
-/* â”€â”€â”€ Surface cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
 .surface-card {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
@@ -174,7 +150,7 @@ body {
   box-shadow: var(--shadow-sm);
 }
 
-/* â”€â”€â”€ Task card colors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
 .task-micro {
   background: var(--micro-bg);
   border: 1px solid rgba(124, 58, 237, 0.25);
@@ -205,7 +181,6 @@ body {
   box-shadow: 0 0 10px var(--macro-glow);
 }
 
-/* â”€â”€â”€ Keyframes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes spin-slow   { from { transform: rotate(0deg); }   to { transform: rotate(360deg); } }
 @keyframes pulse-ring  { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.7; transform:scale(1.04); } }
 @keyframes slide-in-right { from { opacity:0; transform:translateX(20px); } to { opacity:1; transform:translateX(0); } }
@@ -221,7 +196,7 @@ body {
 @keyframes orbit          { from { transform:rotate(0deg) translateX(58px) rotate(0deg); } to { transform:rotate(360deg) translateX(58px) rotate(-360deg); } }
 @keyframes phase-slide-in { from { opacity:0; transform:translateY(16px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
 
-/* â”€â”€â”€ Animation utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
 .animate-spin-slow   { animation: spin-slow 4s linear infinite; }
 .animate-pulse-ring  { animation: pulse-ring 2s ease-in-out infinite; }
 .animate-slide-right { animation: slide-in-right 0.25s ease forwards; }
@@ -233,7 +208,6 @@ body {
 .animate-float       { animation: float 3s ease-in-out infinite; }
 .animate-task-enter  { animation: task-enter 0.2s cubic-bezier(0.34,1.56,0.64,1) forwards; }
 
-/* â”€â”€â”€ Phase badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .phase-badge {
   font-size: 10px;
   font-weight: 700;
@@ -243,11 +217,10 @@ body {
   border-radius: 999px;
 }
 
-/* â”€â”€â”€ Queue section headers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
 .queue-header-micro { color: var(--micro-primary); }
 .queue-header-macro { color: var(--macro-primary); }
 
-/* â”€â”€â”€ Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -312,7 +285,7 @@ body {
 }
 .btn-danger:hover:not(:disabled) { background: rgba(220,38,38,0.08); border-color: var(--danger); }
 
-/* â”€â”€â”€ Nav item â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
 .nav-item {
   display: flex;
   align-items: center;
@@ -340,7 +313,7 @@ body {
   border-color: rgba(96,165,250,0.2);
 }
 
-/* â”€â”€â”€ Stat card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
 .stat-card {
   background: var(--bg-elevated);
   border: 1px solid var(--border-subtle);
@@ -368,7 +341,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* â”€â”€â”€ Log terminal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
 .log-terminal {
   background: var(--log-bg);
   border: 1px solid var(--border-subtle);
@@ -397,7 +370,7 @@ body {
 .log-msg-system { color: #34d399; }
 .log-msg-info   { color: #93c5fd; }
 
-/* â”€â”€â”€ Phase timeline node â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
 .phase-node {
   display: flex;
   flex-direction: column;
@@ -427,7 +400,6 @@ body {
   transition: background 0.3s ease;
 }
 
-/* â”€â”€â”€ Phase timeline responsive overrides â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @media (max-width: 1200px) {
   .phase-node {
     min-width: 80px !important;
@@ -451,7 +423,7 @@ body {
   }
 }
 
-/* â”€â”€â”€ Desktop Gate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
 .desktop-gate {
   display: flex;
   flex-direction: column;
@@ -548,7 +520,7 @@ body {
   }
 }
 
-/* â”€â”€â”€ Responsive Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+
 @media (max-width: 1200px) {
   :root, .light, .dark {
     --sidebar-width: 68px;
@@ -581,8 +553,6 @@ body {
   }
 }
 
-
-/* â”€â”€â”€ Main Containers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .sim-main-container {
   display: flex;
   flex: 1;
@@ -599,7 +569,6 @@ body {
   overflow: hidden;
 }
 
-/* â”€â”€â”€ Control Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .control-panel-container {
   width: var(--control-width);
   min-width: var(--control-width);
@@ -614,7 +583,6 @@ body {
   z-index: 1;
 }
 
-/* â”€â”€â”€ Visualization Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .vis-grid {
   display: grid;
   grid-template-columns: 1fr 160px 1fr;
@@ -641,7 +609,6 @@ body {
   overflow: visible;
 }
 
-/* â”€â”€â”€ Stats Panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .stats-panel-container {
   display: grid;
   grid-template-columns: 320px 1fr;
@@ -659,7 +626,6 @@ body {
   gap: 12px;
 }
 
-/* â”€â”€â”€ Bottom Panels (Timeline + Logs) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .bottom-sections-container {
   display: grid;
   grid-template-columns: 1.5fr 1fr;
@@ -696,8 +662,6 @@ body {
   min-height: 0;
   overflow: hidden;
 }
-
-/* â”€â”€â”€ Responsive Breakpoints â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 
 @media (max-width: 1440px) {
   .stats-panel-container {
