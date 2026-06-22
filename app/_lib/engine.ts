@@ -29,10 +29,12 @@ export type EngineStore = {
   macrotaskQueue: Task[];
   callStack: Task[];
   currentTask: Task | null;
+  completedTasks: Task[];
   isRunning: boolean;
   isPaused: boolean;
   speed: number;
   currentPhase: string;
+  currentPhaseNumber: number;
   _setPhase: (phase: any) => void;
   _setRunning: (v: boolean) => void;
   _setPaused: (v: boolean) => void;
@@ -48,12 +50,17 @@ export type EngineStore = {
   _completeActivePhase: () => void;
   _pushLog: (msg: string, type: any) => void;
   _pushTick: (taskId: string, label: string, type: any, event: string) => void;
+  _setEducationalText?: (text: string) => void;
+  _addScheduledTask?: (task: Task) => void;
 };
 
 // ─── Engine internal state machine ────────────────────────────────────────────
 
 type EnginePhase =
   | "check-queues"
+  // sync task path
+  | "execute-sync-task"
+  | "complete-sync-task"
   // microtask drain path (all within ONE event loop phase)
   | "start-microtask"
   | "animate-microtask-to-loop"
@@ -141,11 +148,22 @@ export class SimulationEngine {
     if (this.destroyed) return;
     const s = this.s();
 
+    // Update educational text for the current phase
+    this.updateEducationalText(this.enginePhase, this.activeTask);
+
     switch (this.enginePhase) {
 
       // ── DECISION POINT ───────────────────────────────────────────────────────
       case "check-queues": {
         if (s.callStack.length > 0) {
+          // If we have a synchronous main() task preloaded, execute it first
+          if (s.callStack[0].id === "sync-task-main") {
+            this.activeTask = s.callStack[0];
+            s._setPhase("executing-task");
+            this.enginePhase = "execute-sync-task";
+            this.scheduleNext(this.delay(BASE_TIMING.executing));
+            return;
+          }
           this.scheduleNext(100);
           return;
         }
@@ -175,6 +193,26 @@ export class SimulationEngine {
 
         // All done
         this.enginePhase = "done";
+        this.scheduleNext(50);
+        return;
+      }
+
+      // ── SYNC TASK LIFECYCLE ──────────────────────────────────────────────────
+      case "execute-sync-task": {
+        if (!this.activeTask) { this.enginePhase = "check-queues"; this.scheduleNext(50); return; }
+        const task = this.activeTask;
+        s._completeTask(task);
+        s._pushLog(`[Stack] ${task.label} completed. Call Stack is now empty.`, "system");
+        s._pushTick(task.id, task.label, "macrotask", "completed");
+        this.enginePhase = "complete-sync-task";
+        this.scheduleNext(this.delay(BASE_TIMING.completing));
+        this.completeStepIfNeeded();
+        return;
+      }
+
+      case "complete-sync-task": {
+        this.activeTask = null;
+        this.enginePhase = "check-queues";
         this.scheduleNext(50);
         return;
       }
@@ -229,6 +267,7 @@ export class SimulationEngine {
       case "execute-microtask": {
         if (!this.activeTask) { this.enginePhase = "check-queues"; this.scheduleNext(50); return; }
         const task = this.activeTask;
+        this.scheduleChildIfNeeded(task);
         s._completeTask(task);
         s._updateActivePhaseTaskCount(1);
         s._pushLog(`[Micro] ${task.label} ✓ Completed`, "micro");
@@ -309,6 +348,7 @@ export class SimulationEngine {
       case "execute-macrotask": {
         if (!this.activeTask) { this.enginePhase = "check-queues"; this.scheduleNext(50); return; }
         const task = this.activeTask;
+        this.scheduleChildIfNeeded(task);
         s._completeTask(task);
         s._updateActivePhaseTaskCount(1);
         s._pushLog(`[Macro] ${task.label} ✓ Completed`, "macro");
@@ -342,11 +382,80 @@ export class SimulationEngine {
   }
 
   private nextPhaseNum(): number {
-    // Read the current phase number from store (already incremented by _advancePhase)
-    // We can't access store directly here without the getter, so use s()
-    return this.s().currentPhase === "draining-microtasks"
-      ? -1 // placeholder; actual number is in store
-      : -1;
+    return this.s().currentPhaseNumber;
+  }
+
+  private scheduleChildIfNeeded(task: Task) {
+    if (!task.schedules) return;
+    const s = this.s();
+    if (!s._addScheduledTask) return; // safeguard
+
+    const childType = task.schedules.type;
+    const isMicro = childType === "microtask";
+    const prefix = isMicro ? "M" : "T";
+    
+    // Calculate next order label
+    const activeCount = isMicro ? s.microtaskQueue.length : s.macrotaskQueue.length;
+    const completedCount = s.completedTasks.filter(t => t.type === childType).length;
+    const order = activeCount + completedCount + 1;
+
+    const label = isMicro
+      ? `queueMicrotask() (${prefix}${order})`
+      : `setTimeout() (${prefix}${order})`;
+
+    const childTask: Task = {
+      id: `${task.id}-child-${Date.now()}`,
+      label,
+      type: childType,
+      status: "queued",
+      createdAt: Date.now(),
+      parentId: task.id,
+    };
+
+    s._addScheduledTask(childTask);
+  }
+
+  private updateEducationalText(phase: EnginePhase, task: Task | null = null) {
+    const s = this.s();
+    if (!s._setEducationalText) return;
+
+    if (s.callStack.length > 0 && s.callStack[0].id === "sync-task-main") {
+      s._setEducationalText("Executing synchronous main thread code on the Call Stack. All asynchronous queues are blocked until the stack is completely empty.");
+      return;
+    }
+
+    switch (phase) {
+      case "check-queues":
+        s._setEducationalText("Event Loop is checking task queues. It always checks and drains the microtask queue first before executing a single macrotask.");
+        break;
+      case "start-microtask":
+        s._setEducationalText(`Event Loop selects microtask "${task?.label || "callback"}" from queue.`);
+        break;
+      case "animate-microtask-to-loop":
+        s._setEducationalText(`Moving microtask "${task?.label || "callback"}" through the Event Loop to the Call Stack.`);
+        break;
+      case "animate-microtask-to-stack":
+        s._setEducationalText(`Pushing microtask "${task?.label || "callback"}" onto the Call Stack.`);
+        break;
+      case "execute-microtask":
+        s._setEducationalText(`Executing microtask "${task?.label || "callback"}" on the Call Stack. If this schedules more tasks, they will be enqueued.`);
+        break;
+      case "start-macrotask":
+        s._setEducationalText(`Microtask queue is empty. Event Loop selects one macrotask "${task?.label || "callback"}" from the queue.`);
+        break;
+      case "animate-macrotask-to-loop":
+        s._setEducationalText(`Moving macrotask "${task?.label || "callback"}" through the Event Loop to the Call Stack.`);
+        break;
+      case "animate-macrotask-to-stack":
+        s._setEducationalText(`Pushing macrotask "${task?.label || "callback"}" onto the Call Stack.`);
+        break;
+      case "execute-macrotask":
+        s._setEducationalText(`Executing macrotask "${task?.label || "callback"}" on the Call Stack. Microtask queue will be checked immediately after this finishes.`);
+        break;
+      case "done":
+        s._setEducationalText("Simulation complete. The Call Stack is empty and all queues are fully drained. The Event Loop is idle.");
+        break;
+    }
   }
 
   private completeStepIfNeeded() {

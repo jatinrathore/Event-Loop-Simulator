@@ -1,6 +1,7 @@
 "use client";
 
 import { useRuntimeStore } from "@/app/_lib/store";
+import EducationalBanner from "./EducationalBanner";
 
 const PHASE_LABELS: Record<string, { label: string; desc: string; color: string; bg: string }> = {
   idle: {
@@ -62,47 +63,7 @@ export default function StatsPanel() {
 
   return (
     <div className="stats-panel-container">
-      {/* Educational Phase Overlay */}
-      <div
-        style={{
-          background: phase.bg,
-          border: "1px solid var(--border-subtle)",
-          borderRadius: "10px",
-          padding: "12px 14px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 6,
-          transition: "background 0.4s ease",
-          justifyContent: "center",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              background: phase.color,
-              boxShadow: `0 0 8px ${phase.color}`,
-              flexShrink: 0,
-              animation: isRunning && !isPaused ? "blink 1.2s ease-in-out infinite" : "none",
-            }}
-          />
-          <span
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: phase.color,
-              transition: "color 0.3s ease",
-            }}
-          >
-            {phase.label}
-          </span>
-        </div>
-        <p style={{ fontSize: 10.5, color: "var(--text-secondary)", lineHeight: 1.3, margin: 0 }}>
-          {phase.desc}
-        </p>
-      </div>
+      <EducationalBanner phase={phase} isRunning={isRunning} isPaused={isPaused} />
 
       {/* Stats Cards Grid (Exactly 4 cards) */}
       <div className="stats-grid">

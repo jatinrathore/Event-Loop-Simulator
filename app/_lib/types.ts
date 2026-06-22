@@ -16,6 +16,8 @@ export interface Task {
   type: TaskType;
   status: TaskStatus;
   createdAt: number;
+  schedules?: { type: TaskType } | null;
+  parentId?: string;
 }
 
 // ─── Log Entry ────────────────────────────────────────────────────────────────
@@ -63,6 +65,16 @@ export type RuntimePhase =
   | "executing-macrotask"
   | "executing-task";
 
+// ─── Scenarios & Presets ──────────────────────────────────────────────────────
+
+export type CallStackScenario = "empty" | "busy-sync";
+
+export type ScenarioPreset =
+  | "basic"
+  | "call-stack-busy"
+  | "macro-schedules-micro"
+  | "nested-microtasks";
+
 // ─── Runtime State ────────────────────────────────────────────────────────────
 
 export interface RuntimeState {
@@ -86,6 +98,8 @@ export interface RuntimeState {
   executionLogs: LogEntry[];
   timelineTicks: TimelineTick[];
   tickCounter: number;
+  callStackScenario: CallStackScenario;
+  educationalText: string;
 }
 
 // ─── Speed Config ─────────────────────────────────────────────────────────────

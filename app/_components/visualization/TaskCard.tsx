@@ -101,6 +101,11 @@ export default function TaskCard({ task, size = "md", index = 0 }: TaskCardProps
         }}
       >
         {task.label}
+        {task.schedules && (
+          <span style={{ marginLeft: 6, fontSize: size === "sm" ? 9 : 10, color: "var(--text-muted)", opacity: 0.85, fontWeight: 700 }} title={`Schedules a callback ${task.schedules.type}`}>
+            ➔ {task.schedules.type === "microtask" ? "⚡" : "⏱"}
+          </span>
+        )}
       </span>
     </div>
   );

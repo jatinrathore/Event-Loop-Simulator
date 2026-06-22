@@ -210,13 +210,13 @@ describe("SimulationEngine — Event Loop Phase Counting", () => {
   });
 
   // ── Test 5 ─────────────────────────────────────────────────────────────────
-  it("Test 5: macrotask spawns microtask → 2 phases (1 macro + 1 drain)", async () => {
+  it("Test 5: macrotask schedules microtask → 2 phases (1 macro + 1 drain)", async () => {
     /**
      * Setup: 0 initial microtasks, 1 macrotask
      * During macrotask _completeTask, we inject a microtask into the queue.
      * Expected:
      *   Phase 1: Execute T1  (macrotask)
-     *   Phase 2: Drain M1    (microtask spawned by T1)
+     *   Phase 2: Drain M1    (microtask scheduled by T1)
      * Total: 2 phases, 2 tasks
      */
     const { store, state } = createTestStore(0, 1);
@@ -226,10 +226,10 @@ describe("SimulationEngine — Event Loop Phase Counting", () => {
     store._completeTask = (task) => {
       origComplete(task);
       if (task.id === "t0") {
-        // Inject spawned microtask
+        // Inject scheduled microtask
         state.microtaskQueue.push({
-          id: "spawned-m1",
-          label: "SpawnedMicrotask",
+          id: "scheduled-m1",
+          label: "ScheduledMicrotask",
           type: "microtask",
           status: "queued",
           createdAt: Date.now(),
@@ -242,13 +242,13 @@ describe("SimulationEngine — Event Loop Phase Counting", () => {
     expect(state.tasksCompleted).toBe(2);
     expect(state.phaseCount).toBe(2);
     expect(state.phaseHistory[0].kind).toBe("macrotask");    // Phase 1: T1
-    expect(state.phaseHistory[1].kind).toBe("microtask-drain"); // Phase 2: spawned M1
+    expect(state.phaseHistory[1].kind).toBe("microtask-drain"); // Phase 2: scheduled M1
   });
 
   // ── Test 6 ─────────────────────────────────────────────────────────────────
-  it("Test 6: nested microtasks (M1 creates M2) → 1 phase, 2 tasks", async () => {
+  it("Test 6: nested microtasks (M1 schedules M2) → 1 phase, 2 tasks", async () => {
     /**
-     * M1 creates M2 during its execution.
+     * M1 schedules M2 during its execution.
      * Both drain in the SAME microtask phase — no phase increment between them.
      * Expected: 1 phase, 2 tasks executed.
      */
@@ -258,7 +258,7 @@ describe("SimulationEngine — Event Loop Phase Counting", () => {
     store._completeTask = (task) => {
       origComplete(task);
       if (task.id === "m0") {
-        // M1 spawns M2 into the queue
+        // M1 schedules M2 into the queue
         state.microtaskQueue.push({
           id: "nested-m2",
           label: "NestedMicrotask-M2",

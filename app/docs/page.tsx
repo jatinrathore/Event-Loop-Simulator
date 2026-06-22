@@ -23,9 +23,9 @@ const RULES = [
   },
   {
     num: 3,
-    title: "Macrotasks Can Spawn Microtasks",
+    title: "Macrotasks Can Schedule Microtasks",
     desc: "If a Macrotask adds new Microtasks during its execution, those Microtasks run before the next Macrotask. The queue is re-checked after every Macrotask.",
-    example: "T1 runs, spawns M1 → M1 runs before T2.",
+    example: "T1 runs, schedules M1 → M1 runs before T2.",
     color: "var(--macro-primary)",
   },
   {
