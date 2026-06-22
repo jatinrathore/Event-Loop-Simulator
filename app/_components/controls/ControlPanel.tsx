@@ -182,7 +182,7 @@ export default function ControlPanel() {
               </svg>
             </button>
             {/* Inline schedule option */}
-            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5, paddingLeft: 2 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 5, paddingLeft: 2 }}>
               <label
                 style={{
                   display: "flex",
@@ -376,16 +376,16 @@ export default function ControlPanel() {
           {speed === 0.1
             ? "Extremely Slow (7.0s per step)"
             : speed === 0.25
-            ? "Very Slow (2.8s per step)"
-            : speed === 0.5
-            ? "Slow (1.4s per step)"
-            : speed === 1
-            ? "Normal (700ms per step)"
-            : speed === 2
-            ? "Fast (350ms per step)"
-            : speed === 5
-            ? "Very Fast (140ms per step)"
-            : "Blazing Fast (70ms per step)"}
+              ? "Very Slow (2.8s per step)"
+              : speed === 0.5
+                ? "Slow (1.4s per step)"
+                : speed === 1
+                  ? "Normal (700ms per step)"
+                  : speed === 2
+                    ? "Fast (350ms per step)"
+                    : speed === 5
+                      ? "Very Fast (140ms per step)"
+                      : "Blazing Fast (70ms per step)"}
         </div>
       </div>
 
