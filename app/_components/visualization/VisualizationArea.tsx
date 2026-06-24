@@ -17,6 +17,7 @@ export default function VisualizationArea() {
       <div className="vis-loop" style={{ position: "relative" }}>
         {/* Arrow: Queue → Event Loop (left side) */}
         <div
+          className="vis-connector-arrow"
           style={{
             position: "absolute",
             top: "25%",
@@ -44,6 +45,7 @@ export default function VisualizationArea() {
         </div>
         {/* Arrow: Queue → Event Loop (bottom - macrotask side) */}
         <div
+          className="vis-connector-arrow"
           style={{
             position: "absolute",
             top: "75%",
@@ -70,6 +72,7 @@ export default function VisualizationArea() {
         </div>
         {/* Arrow: Event Loop → Call Stack (right side, centered vertically) */}
         <div
+          className="vis-connector-arrow"
           style={{
             position: "absolute",
             top: "50%",
@@ -94,7 +97,7 @@ export default function VisualizationArea() {
             <polygon points="0,0 7,5 0,10" fill="rgba(96,165,250,0.5)" />
           </svg>
         </div>
-
+ 
         <EventLoopNode />
       </div>
 

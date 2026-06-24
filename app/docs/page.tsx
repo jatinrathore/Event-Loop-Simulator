@@ -216,11 +216,11 @@ export default function DocsPage() {
                 color: "var(--text-secondary)",
               }}
             >
-              <div style={{ color: "var(--text-muted)", marginBottom: 8 }}>// Given this queue state:</div>
+              <div style={{ color: "var(--text-muted)", marginBottom: 8 }}>{"// Given this queue state:"}</div>
               <div><span style={{ color: "var(--micro-primary)" }}>Microtasks:</span> [M1, M2, M3]</div>
               <div><span style={{ color: "var(--macro-primary)" }}>Macrotasks:</span> [T1, T2]</div>
               <div style={{ margin: "12px 0", borderTop: "1px dashed var(--border-subtle)" }} />
-              <div style={{ color: "var(--text-muted)", marginBottom: 8 }}>// Execution order:</div>
+              <div style={{ color: "var(--text-muted)", marginBottom: 8 }}>{"// Execution order:"}</div>
               <div><span style={{ color: "var(--micro-primary)" }}>M1</span> → microtask queue is drained first</div>
               <div><span style={{ color: "var(--micro-primary)" }}>M2</span> → still in microtask queue</div>
               <div><span style={{ color: "var(--micro-primary)" }}>M3</span> → last microtask</div>

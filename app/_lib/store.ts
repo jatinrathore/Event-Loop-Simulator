@@ -42,6 +42,9 @@ const initialState: RuntimeState & { phaseHistory: PhaseEntry[] } = {
   phaseHistory: [],        // Visual phase timeline entries
   callStackScenario: "empty",
   educationalText: "",
+  consoleOutput: [],
+  expectedOutput: [],
+  analyzerCode: "",
 };
 
 // ─── Store interface ──────────────────────────────────────────────────────────
@@ -61,6 +64,12 @@ interface RuntimeStore extends RuntimeState {
   setCallStackScenario: (scenario: CallStackScenario) => void;
   applyPreset: (preset: ScenarioPreset) => void;
   updateTaskSchedules: (taskId: string, schedules: { type: TaskType } | null) => void;
+  setAnalyzerCode: (code: string) => void;
+  loadAnalyzerPreset: (
+    tasks: Task[],
+    expectedOutput: string[],
+    phases?: Array<{ kind: "global-script" | "microtask-drain" | "macrotask"; label: string; taskCount: number }>
+  ) => void;
 
   // Engine-facing internal mutations
   _setPhase: (phase: RuntimePhase) => void;
@@ -77,13 +86,14 @@ interface RuntimeStore extends RuntimeState {
    * Advance the Event Loop phase counter.
    * Called ONCE per microtask-drain session (not per task) and ONCE per macrotask.
    */
-  _advancePhase: (kind: "microtask-drain" | "macrotask", label: string) => void;
+  _advancePhase: (kind: "global-script" | "microtask-drain" | "macrotask", label: string) => void;
   _updateActivePhaseTaskCount: (delta: number) => void;
   _completeActivePhase: () => void;
   _pushLog: (message: string, type: LogType) => void;
   _pushTick: (taskId: string, taskLabel: string, taskType: TaskType, event: string) => void;
   _setEducationalText: (text: string) => void;
   _addScheduledTask: (task: Task) => void;
+  _addConsoleLogs: (logs: string[]) => void;
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -200,6 +210,51 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
     }));
   },
 
+  setAnalyzerCode: (code) => {
+    set({ analyzerCode: code });
+  },
+
+  loadAnalyzerPreset: (tasks, expectedOutput, phases) => {
+    const mainTask = tasks.find((t) => t.id === "sync-task-main" || t.id === "global-script");
+    const otherTasks = tasks.filter((t) => t.id !== "sync-task-main" && t.id !== "global-script");
+
+    const initialMicro = otherTasks.filter(
+      (t) => t.type === "microtask" && t.status === "queued" && (t.parentId === "global-script" || !t.parentId)
+    );
+    const initialMacro = otherTasks.filter(
+      (t) => t.type === "macrotask" && t.status === "queued" && (t.parentId === "global-script" || !t.parentId)
+    );
+
+    const initialPhases: PhaseEntry[] = (phases || []).map((p, idx) => ({
+      id: `analyzer-phase-${idx}-${uuid()}`,
+      phaseNumber: idx + 1,
+      kind: p.kind,
+      label: p.label,
+      taskCount: p.taskCount,
+      status: "pending",
+      startedAt: 0,
+    }));
+
+    microLabelIdx = 0;
+    macroLabelIdx = 0;
+
+    set({
+      ...initialState,
+      callStack: mainTask ? [mainTask] : [],
+      currentTask: mainTask || null,
+      microtaskQueue: initialMicro,
+      macrotaskQueue: initialMacro,
+      expectedOutput,
+      phaseHistory: initialPhases,
+      consoleOutput: [],
+      analyzerCode: get().analyzerCode,
+      isRunning: false,
+      isPaused: false,
+    });
+
+    get()._pushLog("[Analyzer] Code analysis complete. Simulation queues ready.", "system");
+  },
+
   applyPreset: (preset) => {
     microLabelIdx = 0;
     macroLabelIdx = 0;
@@ -310,27 +365,52 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
    */
   _advancePhase: (kind, label) => {
     const nextPhaseNumber = get().currentPhaseNumber + 1;
-    const entry: PhaseEntry = {
-      id: uuid(),
-      phaseNumber: nextPhaseNumber,
-      kind,
-      label,
-      taskCount: 0,
-      status: "active",
-      startedAt: Date.now(),
-    };
-    set((s) => ({
-      currentPhaseNumber: nextPhaseNumber,
-      phaseHistory: [...s.phaseHistory, entry],
-    }));
+    set((s) => {
+      const updated = [...s.phaseHistory];
+      const existingPendingIdx = updated.findIndex(
+        (p, idx) => idx === nextPhaseNumber - 1 && p.status === "pending"
+      );
+
+      if (existingPendingIdx !== -1) {
+        updated[existingPendingIdx] = {
+          ...updated[existingPendingIdx],
+          status: "active",
+          taskCount: 0,
+          startedAt: Date.now(),
+        };
+        return {
+          currentPhaseNumber: nextPhaseNumber,
+          phaseHistory: updated,
+        };
+      } else {
+        const entry: PhaseEntry = {
+          id: uuid(),
+          phaseNumber: nextPhaseNumber,
+          kind,
+          label,
+          taskCount: 0,
+          status: "active",
+          startedAt: Date.now(),
+        };
+        return {
+          currentPhaseNumber: nextPhaseNumber,
+          phaseHistory: [...s.phaseHistory, entry],
+        };
+      }
+    });
   },
 
   _updateActivePhaseTaskCount: (delta) => {
     set((s) => {
       if (s.phaseHistory.length === 0) return {};
       const updated = [...s.phaseHistory];
-      const last = updated[updated.length - 1];
-      updated[updated.length - 1] = { ...last, taskCount: last.taskCount + delta };
+      const activeIdx = updated.findIndex((p) => p.status === "active");
+      if (activeIdx !== -1) {
+        updated[activeIdx] = { ...updated[activeIdx], taskCount: updated[activeIdx].taskCount + delta };
+      } else {
+        const lastIdx = updated.length - 1;
+        updated[lastIdx] = { ...updated[lastIdx], taskCount: updated[lastIdx].taskCount + delta };
+      }
       return { phaseHistory: updated };
     });
   },
@@ -339,8 +419,13 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
     set((s) => {
       if (s.phaseHistory.length === 0) return {};
       const updated = [...s.phaseHistory];
-      const last = updated[updated.length - 1];
-      updated[updated.length - 1] = { ...last, status: "completed" };
+      const activeIdx = updated.findIndex((p) => p.status === "active");
+      if (activeIdx !== -1) {
+        updated[activeIdx] = { ...updated[activeIdx], status: "completed" };
+      } else {
+        const lastIdx = updated.length - 1;
+        updated[lastIdx] = { ...updated[lastIdx], status: "completed" };
+      }
       return { phaseHistory: updated };
     });
   },
@@ -376,6 +461,15 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
   _setEducationalText: (text) => set({ educationalText: text }),
 
   _addScheduledTask: (task) => {
+    const exists =
+      get().microtaskQueue.some((t) => t.id === task.id) ||
+      get().macrotaskQueue.some((t) => t.id === task.id) ||
+      get().callStack.some((t) => t.id === task.id) ||
+      get().completedTasks.some((t) => t.id === task.id) ||
+      (get().currentTask && get().currentTask?.id === task.id);
+
+    if (exists) return;
+
     set((s) => ({
       microtaskQueue: task.type === "microtask"
         ? [...s.microtaskQueue, task]
@@ -385,5 +479,9 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
         : s.macrotaskQueue,
     }));
     get()._pushLog(`[Schedule] Task ${task.label} scheduled new ${task.type}`, "system");
+  },
+
+  _addConsoleLogs: (logs) => {
+    set((s) => ({ consoleOutput: [...s.consoleOutput, ...logs] }));
   },
 }));

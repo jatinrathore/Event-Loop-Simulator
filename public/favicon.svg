@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none">
+  <!-- Event Loop Circle (Teal) -->
+  <path d="M28 16c0 6.627-5.373 12-12 12S4 22.627 4 16m24 0c0-6.627-5.373-12-12-12S4 9.373 4 16" stroke="#14b8a6" stroke-width="3" stroke-linecap="round"/>
+  <!-- Arrow heads for rotation visual (Teal) -->
+  <path d="M24 12l4-4-4-4" stroke="#14b8a6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M8 20l-4 4 4 4" stroke="#14b8a6" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Microtask Lightning (Purple) -->
+  <path d="M15 8l-5 8h6l-4 8" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Macrotask Timer/Clock (Amber) -->
+  <circle cx="20" cy="18" r="4" stroke="#f59e0b" stroke-width="2.5"/>
+  <path d="M20 16v2h2" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

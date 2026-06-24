@@ -17,6 +17,9 @@ export const metadata: Metadata = {
     "Visualizer",
     "Educational",
   ],
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({

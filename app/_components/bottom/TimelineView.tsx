@@ -118,6 +118,7 @@ export default function TimelineView() {
             }
 
             const isMicro = phase.kind === "microtask-drain";
+            const isGlobal = phase.kind === "global-script";
 
             return (
               <React.Fragment key={phase.id}>
@@ -152,7 +153,7 @@ export default function TimelineView() {
                       phase.phaseNumber
                     )}
 
-                    {/* Small badge to denote microtask drain vs macrotask */}
+                    {/* Small badge to denote microtask drain vs macrotask vs global script */}
                     <div
                       style={{
                         position: "absolute",
@@ -161,7 +162,7 @@ export default function TimelineView() {
                         width: 14,
                         height: 14,
                         borderRadius: "50%",
-                        background: isMicro ? "var(--micro-primary)" : "var(--macro-primary)",
+                        background: isGlobal ? "var(--stack-primary)" : isMicro ? "var(--micro-primary)" : "var(--macro-primary)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
@@ -169,9 +170,9 @@ export default function TimelineView() {
                         fontSize: 8,
                         fontWeight: 800,
                       }}
-                      title={isMicro ? "Microtask Drain" : "Macrotask"}
+                      title={isGlobal ? "Global Script" : isMicro ? "Microtask Drain" : "Macrotask"}
                     >
-                      {isMicro ? "M" : "T"}
+                      {isGlobal ? "G" : isMicro ? "M" : "T"}
                     </div>
                   </div>
 

@@ -45,13 +45,14 @@ export type EngineStore = {
   _removeFromMacrotaskQueue: (id: string) => void;
   _removeFromCallStack: (id: string) => void;
   _completeTask: (t: Task) => void;
-  _advancePhase: (kind: "microtask-drain" | "macrotask", label: string) => void;
+  _advancePhase: (kind: "global-script" | "microtask-drain" | "macrotask", label: string) => void;
   _updateActivePhaseTaskCount: (delta: number) => void;
   _completeActivePhase: () => void;
   _pushLog: (msg: string, type: any) => void;
   _pushTick: (taskId: string, label: string, type: any, event: string) => void;
   _setEducationalText?: (text: string) => void;
   _addScheduledTask?: (task: Task) => void;
+  _addConsoleLogs?: (logs: string[]) => void;
 };
 
 // ─── Engine internal state machine ────────────────────────────────────────────
@@ -157,8 +158,9 @@ export class SimulationEngine {
       case "check-queues": {
         if (s.callStack.length > 0) {
           // If we have a synchronous main() task preloaded, execute it first
-          if (s.callStack[0].id === "sync-task-main") {
+          if (s.callStack[0].id === "sync-task-main" || s.callStack[0].id === "global-script") {
             this.activeTask = s.callStack[0];
+            s._advancePhase("global-script", "Global Script");
             s._setPhase("executing-task");
             this.enginePhase = "execute-sync-task";
             this.scheduleNext(this.delay(BASE_TIMING.executing));
@@ -201,6 +203,18 @@ export class SimulationEngine {
       case "execute-sync-task": {
         if (!this.activeTask) { this.enginePhase = "check-queues"; this.scheduleNext(50); return; }
         const task = this.activeTask;
+        if (task.consoleLogs && task.consoleLogs.length > 0 && s._addConsoleLogs) {
+          s._addConsoleLogs(task.consoleLogs);
+        }
+
+        if (task.executionTicks && task.executionTicks.length > 0) {
+          for (const tick of task.executionTicks) {
+            s._pushTick(task.id, task.label, task.type, tick.event);
+            s._pushLog(`[Call Stack] ${tick.event}`, "system");
+          }
+        }
+
+        this.scheduleChildIfNeeded(task);
         s._completeTask(task);
         s._pushLog(`[Stack] ${task.label} completed. Call Stack is now empty.`, "system");
         s._pushTick(task.id, task.label, "macrotask", "completed");
@@ -212,6 +226,7 @@ export class SimulationEngine {
 
       case "complete-sync-task": {
         this.activeTask = null;
+        s._completeActivePhase();
         this.enginePhase = "check-queues";
         this.scheduleNext(50);
         return;
@@ -267,6 +282,17 @@ export class SimulationEngine {
       case "execute-microtask": {
         if (!this.activeTask) { this.enginePhase = "check-queues"; this.scheduleNext(50); return; }
         const task = this.activeTask;
+        if (task.consoleLogs && task.consoleLogs.length > 0 && s._addConsoleLogs) {
+          s._addConsoleLogs(task.consoleLogs);
+        }
+
+        if (task.executionTicks && task.executionTicks.length > 0) {
+          for (const tick of task.executionTicks) {
+            s._pushTick(task.id, task.label, task.type, tick.event);
+            s._pushLog(`[Call Stack] ${tick.event}`, "system");
+          }
+        }
+
         this.scheduleChildIfNeeded(task);
         s._completeTask(task);
         s._updateActivePhaseTaskCount(1);
@@ -348,6 +374,17 @@ export class SimulationEngine {
       case "execute-macrotask": {
         if (!this.activeTask) { this.enginePhase = "check-queues"; this.scheduleNext(50); return; }
         const task = this.activeTask;
+        if (task.consoleLogs && task.consoleLogs.length > 0 && s._addConsoleLogs) {
+          s._addConsoleLogs(task.consoleLogs);
+        }
+
+        if (task.executionTicks && task.executionTicks.length > 0) {
+          for (const tick of task.executionTicks) {
+            s._pushTick(task.id, task.label, task.type, tick.event);
+            s._pushLog(`[Call Stack] ${tick.event}`, "system");
+          }
+        }
+
         this.scheduleChildIfNeeded(task);
         s._completeTask(task);
         s._updateActivePhaseTaskCount(1);
@@ -386,10 +423,25 @@ export class SimulationEngine {
   }
 
   private scheduleChildIfNeeded(task: Task) {
-    if (!task.schedules) return;
     const s = this.s();
     if (!s._addScheduledTask) return; // safeguard
 
+    // If pre-planned scheduledTasks are present, prioritize them
+    if (task.scheduledTasks && task.scheduledTasks.length > 0) {
+      for (const child of task.scheduledTasks) {
+        const childTask: Task = {
+          ...child,
+          id: child.id || `${task.id}-child-${Date.now()}-${Math.random()}`,
+          status: "queued",
+          createdAt: Date.now(),
+          parentId: task.id,
+        };
+        s._addScheduledTask(childTask);
+      }
+      return;
+    }
+
+    if (!task.schedules) return;
     const childType = task.schedules.type;
     const isMicro = childType === "microtask";
     const prefix = isMicro ? "M" : "T";

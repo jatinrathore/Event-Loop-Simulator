@@ -14,7 +14,7 @@ import type { Task, TaskStatus, RuntimePhase } from "./types";
 
 // ─── Minimal in-memory store for testing ─────────────────────────────────────
 
-type Phase = "microtask-drain" | "macrotask";
+type Phase = "global-script" | "microtask-drain" | "macrotask";
 
 function createTestStore(
   micros: number,
@@ -44,10 +44,12 @@ function createTestStore(
     macrotaskQueue: [...macrotaskQueue],
     callStack: [] as Task[],
     currentTask: null as Task | null,
+    completedTasks: [] as Task[],
     isRunning: true,
     isPaused: false,
     speed: speedMultiplier,
     currentPhase: "idle" as RuntimePhase,
+    currentPhaseNumber: 0,
 
     // metrics
     phaseCount: 0,
@@ -61,10 +63,12 @@ function createTestStore(
     get macrotaskQueue() { return state.macrotaskQueue; },
     get callStack() { return state.callStack; },
     get currentTask() { return state.currentTask; },
+    get completedTasks() { return state.completedTasks; },
     get isRunning() { return state.isRunning; },
     get isPaused() { return state.isPaused; },
     get speed() { return state.speed; },
     get currentPhase() { return state.currentPhase; },
+    get currentPhaseNumber() { return state.currentPhaseNumber; },
 
     _setPhase(phase) { state.currentPhase = phase as RuntimePhase; },
     _setRunning(v) { state.isRunning = v; },
@@ -101,10 +105,12 @@ function createTestStore(
       state.callStack = state.callStack.filter((t) => t.id !== task.id);
       state.currentTask = null;
       state.tasksCompleted++;
+      state.completedTasks.push(task);
     },
 
     _advancePhase(kind, label) {
       state.phaseCount++;
+      state.currentPhaseNumber++;
       state.phaseHistory.push({ kind, label, taskCount: 0 });
     },
 
