@@ -114,7 +114,7 @@ export default function Sidebar() {
             Event Loop
           </div>
           <div style={{ fontSize: 10, color: "var(--text-muted)", fontWeight: 500 }}>
-            Visualizer v1.0
+            Visualizer v2.0.0
           </div>
         </div>
       </div>
