@@ -364,7 +364,11 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
    * - start of each macrotask
    */
   _advancePhase: (kind, label) => {
-    const nextPhaseNumber = get().currentPhaseNumber + 1;
+    const isEventLoopIteration = kind !== "global-script";
+    const nextPhaseNumber = isEventLoopIteration 
+      ? get().currentPhaseNumber + 1 
+      : get().currentPhaseNumber; // don't increment for global script
+
     set((s) => {
       const updated = [...s.phaseHistory];
       const existingPendingIdx = updated.findIndex(
@@ -385,7 +389,7 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
       } else {
         const entry: PhaseEntry = {
           id: uuid(),
-          phaseNumber: nextPhaseNumber,
+          phaseNumber: isEventLoopIteration ? nextPhaseNumber : 0,
           kind,
           label,
           taskCount: 0,
