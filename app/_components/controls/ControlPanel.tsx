@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRuntimeStore } from "@/app/_lib/store";
+import { useStoreContext as useRuntimeStore, useStoreInstance } from "@/app/_components/StoreProvider";
 import { simulationEngine } from "@/app/_lib/engine";
-import { SPEED_MULTIPLIERS, CallStackScenario, TaskType } from "@/app/_lib/types";
+import { CallStackScenario, TaskType } from "@/app/_lib/types";
 import ScenarioPresets from "./ScenarioPresets";
+import SpeedControl from "./SpeedControl";
 
 export default function ControlPanel() {
-  const store = useRuntimeStore();
+  const storeInstance = useStoreInstance();
+  const store = useRuntimeStore((state) => state);
   const {
     addMicrotask,
     addMacrotask,
@@ -19,7 +21,6 @@ export default function ControlPanel() {
     setSpeed,
     isRunning,
     isPaused,
-    speed,
     microtaskQueue,
     macrotaskQueue,
     callStack,
@@ -40,7 +41,7 @@ export default function ControlPanel() {
       if (!engineStarted.current) {
         engineStarted.current = true;
         // Pass getState function (not a snapshot) so the engine always reads fresh state
-        simulationEngine.start(useRuntimeStore.getState);
+        simulationEngine.start(storeInstance.getState);
       }
     }
     if (!isRunning) {
@@ -56,10 +57,10 @@ export default function ControlPanel() {
       startSimulation();
       engineStarted.current = true;
       setTimeout(() => {
-        simulationEngine.step(useRuntimeStore.getState);
+        simulationEngine.step(storeInstance.getState);
       }, 50);
     } else {
-      simulationEngine.step(useRuntimeStore.getState);
+      simulationEngine.step(storeInstance.getState);
     }
     stepForward();
   };
@@ -69,7 +70,7 @@ export default function ControlPanel() {
     setTimeout(() => {
       if (!engineStarted.current) {
         engineStarted.current = true;
-        simulationEngine.start(useRuntimeStore.getState);
+        simulationEngine.start(storeInstance.getState);
       }
     }, 50);
   };
@@ -350,44 +351,7 @@ export default function ControlPanel() {
       </div>
 
       {/* Speed Control */}
-      <div style={{ padding: "14px", borderBottom: "1px solid var(--border-subtle)" }}>
-        <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 10 }}>
-          Speed
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4 }}>
-          {SPEED_MULTIPLIERS.map((s) => (
-            <button
-              key={s}
-              className="btn btn-ghost"
-              style={{
-                padding: "6px 2px",
-                fontSize: 10,
-                background: speed === s ? "var(--stack-bg)" : "transparent",
-                borderColor: speed === s ? "var(--stack-primary)" : "var(--border-subtle)",
-                color: speed === s ? "var(--stack-primary)" : "var(--text-secondary)",
-              }}
-              onClick={() => setSpeed(s)}
-            >
-              {s}x
-            </button>
-          ))}
-        </div>
-        <div style={{ marginTop: 8, fontSize: 10, color: "var(--text-muted)", textAlign: "center" }}>
-          {speed === 0.1
-            ? "Extremely Slow (7.0s per step)"
-            : speed === 0.25
-              ? "Very Slow (2.8s per step)"
-              : speed === 0.5
-                ? "Slow (1.4s per step)"
-                : speed === 1
-                  ? "Normal (700ms per step)"
-                  : speed === 2
-                    ? "Fast (350ms per step)"
-                    : speed === 5
-                      ? "Very Fast (140ms per step)"
-                      : "Blazing Fast (70ms per step)"}
-        </div>
-      </div>
+      <SpeedControl />
 
       {/* Presets */}
       <ScenarioPresets />

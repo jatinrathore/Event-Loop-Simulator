@@ -1,6 +1,6 @@
 "use client";
 
-import { useRuntimeStore } from "@/app/_lib/store";
+import { useStoreContext as useRuntimeStore } from "@/app/_components/StoreProvider";
 import EducationalBanner from "./EducationalBanner";
 
 const PHASE_LABELS: Record<string, { label: string; desc: string; color: string; bg: string }> = {
@@ -30,94 +30,51 @@ const PHASE_LABELS: Record<string, { label: string; desc: string; color: string;
   },
 };
 
-export default function StatsPanel() {
+export default function StatsPanel({ showMetrics = false }: { showMetrics?: boolean }) {
   const {
-    microtaskQueue,
-    macrotaskQueue,
-    completedTasks,
     currentPhaseNumber,
-    tasksExecuted,
     currentPhase,
     isRunning,
     isPaused,
-    callStack,
+    tasksExecuted,
+    microtaskQueue,
+    macrotaskQueue,
   } = useRuntimeStore();
 
   const phase = PHASE_LABELS[currentPhase] || PHASE_LABELS.idle;
 
-  const statusLabel = !isRunning
-    ? completedTasks.length > 0
-      ? "Simulation Complete"
-      : "Waiting to Start"
-    : isPaused
-      ? "Paused"
-      : "Running";
-
-  const statusColor = !isRunning
-    ? completedTasks.length > 0
-      ? "var(--success)"
-      : "var(--text-muted)"
-    : isPaused
-      ? "var(--warning)"
-      : "var(--success)";
-
   return (
     <div className="stats-panel-container">
-      <EducationalBanner phase={phase} isRunning={isRunning} isPaused={isPaused} />
+      {/* Educational Banner (Wide) */}
+      <div className="stat-card stat-card-wide" style={{ padding: 0, display: "flex", flexDirection: "column", justifyContent: "center", overflow: "hidden" }}>
+        <EducationalBanner phase={phase} isRunning={isRunning} isPaused={isPaused} />
+      </div>
 
-      {/* Stats Cards Grid (Exactly 4 cards) */}
-      <div className="stats-grid">
-        {/* Card 1: Event Loop Phase */}
-        <div className="stat-card" style={{ padding: "10px 14px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div className="stat-label" style={{ fontSize: "9px" }}>Event Loop Iteration</div>
-          <div className="stat-value" style={{ color: "var(--loop-primary)", fontSize: "24px", marginTop: 2 }}>
-            {currentPhaseNumber}
-          </div>
-        </div>
-
-        {/* Card 2: Tasks Executed */}
-        <div className="stat-card" style={{ padding: "10px 14px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div className="stat-label" style={{ fontSize: "9px" }}>Tasks Executed</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
-            <div className="stat-value" style={{ color: "var(--stack-primary)", fontSize: "24px" }}>
-              {tasksExecuted}
-            </div>
-            {callStack.length > 0 && (
-              <span style={{ fontSize: 9, fontWeight: 600, color: "var(--stack-primary)", background: "var(--stack-bg)", padding: "1px 4px", borderRadius: 4 }}>
-                Stack: {callStack.length}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Card 3: Microtasks */}
-        <div className="stat-card" style={{ padding: "10px 14px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div className="stat-label" style={{ fontSize: "9px" }}>⚡ Microtasks Left</div>
-          <div
-            className="stat-value"
-            style={{ color: microtaskQueue.length > 0 ? "var(--micro-primary)" : "var(--text-muted)", fontSize: "24px", marginTop: 2 }}
-          >
-            {microtaskQueue.length}
-          </div>
-        </div>
-
-        {/* Card 4: Macrotasks */}
-        <div className="stat-card" style={{ padding: "10px 14px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <div className="stat-label" style={{ fontSize: "9px" }}>⏱ Macrotasks Left</div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 2 }}>
-            <div
-              className="stat-value"
-              style={{ color: macrotaskQueue.length > 0 ? "var(--macro-primary)" : "var(--text-muted)", fontSize: "24px" }}
-            >
-              {macrotaskQueue.length}
-            </div>
-            <span style={{ fontSize: 9, fontWeight: 700, color: statusColor, display: "flex", alignItems: "center", gap: 3 }}>
-              <span style={{ display: "inline-block", width: 5, height: 5, borderRadius: "50%", background: statusColor }} />
-              {statusLabel}
-            </span>
-          </div>
+      {/* Event Loop Iteration */}
+      <div className="stat-card stat-card-narrow" style={{ padding: "8px 10px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div className="stat-label" style={{ fontSize: "9px", lineHeight: 1.2 }}>Event Loop<br/>Iteration</div>
+        <div className="stat-value" style={{ color: "var(--loop-primary)", fontSize: "24px", marginTop: 2 }}>
+          {currentPhaseNumber}
         </div>
       </div>
+
+      {/* Optional Metrics for Simulator Page */}
+      {showMetrics && (
+        <>
+          <div className="stat-card stat-card-narrow" style={{ padding: "8px 10px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div className="stat-label" style={{ fontSize: "9px", lineHeight: 1.2 }}>Tasks<br/>Executed</div>
+            <div className="stat-value" style={{ color: "var(--text-primary)", fontSize: "24px", marginTop: 2 }}>{tasksExecuted}</div>
+          </div>
+          <div className="stat-card stat-card-narrow" style={{ padding: "8px 10px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div className="stat-label" style={{ fontSize: "9px", lineHeight: 1.2 }}>Microtasks<br/>Left</div>
+            <div className="stat-value" style={{ color: "var(--micro-primary)", fontSize: "24px", marginTop: 2 }}>{microtaskQueue.length}</div>
+          </div>
+          <div className="stat-card stat-card-narrow" style={{ padding: "8px 10px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <div className="stat-label" style={{ fontSize: "9px", lineHeight: 1.2 }}>Macrotasks<br/>Left</div>
+            <div className="stat-value" style={{ color: "var(--macro-primary)", fontSize: "24px", marginTop: 2 }}>{macrotaskQueue.length}</div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

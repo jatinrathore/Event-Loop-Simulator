@@ -49,7 +49,11 @@ export type EngineStore = {
   _updateActivePhaseTaskCount: (delta: number) => void;
   _completeActivePhase: () => void;
   _pushLog: (msg: string, type: any) => void;
-  _pushTick: (taskId: string, label: string, type: any, event: string) => void;
+  _pushTick: (taskId: string, label: string, type: any, event: string, line?: number, column?: number) => void;
+  _setActiveLine: (line: number | null) => void;
+  _pushFrame: (name: string) => void;
+  _popFrame: () => void;
+  _clearFrames: () => void;
   _setEducationalText?: (text: string) => void;
   _addScheduledTask?: (task: Task) => void;
   _addConsoleLogs?: (logs: string[]) => void;
@@ -62,6 +66,7 @@ type EnginePhase =
   // sync task path
   | "execute-sync-task"
   | "complete-sync-task"
+  | "execute-task-tick"
   // microtask drain path (all within ONE event loop phase)
   | "start-microtask"
   | "animate-microtask-to-loop"
@@ -84,6 +89,7 @@ export class SimulationEngine {
   private stepMode: boolean = false;
   private stepComplete: boolean = false;
   private destroyed: boolean = false;
+  private currentTickIndex: number = 0;
   /** True while draining microtasks in a single phase session */
   private inMicrotaskDrain: boolean = false;
 
@@ -97,6 +103,7 @@ export class SimulationEngine {
     this.stepComplete = false;
     this.destroyed = false;
     this.activeTask = null;
+    this.currentTickIndex = 0;
     this.inMicrotaskDrain = false;
     this.scheduleNext(100);
   }
@@ -202,25 +209,9 @@ export class SimulationEngine {
       // ── SYNC TASK LIFECYCLE ──────────────────────────────────────────────────
       case "execute-sync-task": {
         if (!this.activeTask) { this.enginePhase = "check-queues"; this.scheduleNext(50); return; }
-        const task = this.activeTask;
-        if (task.consoleLogs && task.consoleLogs.length > 0 && s._addConsoleLogs) {
-          s._addConsoleLogs(task.consoleLogs);
-        }
-
-        if (task.executionTicks && task.executionTicks.length > 0) {
-          for (const tick of task.executionTicks) {
-            s._pushTick(task.id, task.label, task.type, tick.event);
-            s._pushLog(`[Call Stack] ${tick.event}`, "system");
-          }
-        }
-
-        this.scheduleChildIfNeeded(task);
-        s._completeTask(task);
-        s._pushLog(`[Stack] ${task.label} completed. Call Stack is now empty.`, "system");
-        s._pushTick(task.id, task.label, "macrotask", "completed");
-        this.enginePhase = "complete-sync-task";
-        this.scheduleNext(this.delay(BASE_TIMING.completing));
-        this.completeStepIfNeeded();
+        this.currentTickIndex = 0;
+        this.enginePhase = "execute-task-tick";
+        this.scheduleNext(50);
         return;
       }
 
@@ -281,26 +272,9 @@ export class SimulationEngine {
 
       case "execute-microtask": {
         if (!this.activeTask) { this.enginePhase = "check-queues"; this.scheduleNext(50); return; }
-        const task = this.activeTask;
-        if (task.consoleLogs && task.consoleLogs.length > 0 && s._addConsoleLogs) {
-          s._addConsoleLogs(task.consoleLogs);
-        }
-
-        if (task.executionTicks && task.executionTicks.length > 0) {
-          for (const tick of task.executionTicks) {
-            s._pushTick(task.id, task.label, task.type, tick.event);
-            s._pushLog(`[Call Stack] ${tick.event}`, "system");
-          }
-        }
-
-        this.scheduleChildIfNeeded(task);
-        s._completeTask(task);
-        s._updateActivePhaseTaskCount(1);
-        s._pushLog(`[Micro] ${task.label} ✓ Completed`, "micro");
-        s._pushTick(task.id, task.label, "microtask", "completed");
-        this.enginePhase = "complete-microtask";
-        this.scheduleNext(this.delay(BASE_TIMING.completing));
-        this.completeStepIfNeeded();
+        this.currentTickIndex = 0;
+        this.enginePhase = "execute-task-tick";
+        this.scheduleNext(50);
         return;
       }
 
@@ -373,25 +347,68 @@ export class SimulationEngine {
 
       case "execute-macrotask": {
         if (!this.activeTask) { this.enginePhase = "check-queues"; this.scheduleNext(50); return; }
+        this.currentTickIndex = 0;
+        this.enginePhase = "execute-task-tick";
+        this.scheduleNext(50);
+        return;
+      }
+
+      case "execute-task-tick": {
+        if (!this.activeTask) { this.enginePhase = "check-queues"; this.scheduleNext(50); return; }
         const task = this.activeTask;
-        if (task.consoleLogs && task.consoleLogs.length > 0 && s._addConsoleLogs) {
-          s._addConsoleLogs(task.consoleLogs);
-        }
+        const ticks = task.executionTicks || [];
 
-        if (task.executionTicks && task.executionTicks.length > 0) {
-          for (const tick of task.executionTicks) {
-            s._pushTick(task.id, task.label, task.type, tick.event);
-            s._pushLog(`[Call Stack] ${tick.event}`, "system");
+        if (this.currentTickIndex >= ticks.length) {
+          this.scheduleChildIfNeeded(task);
+          s._completeTask(task);
+          s._clearFrames(); // Ensure no frames leak across macro/micro boundaries
+          
+          if (task.type === "microtask") {
+            s._updateActivePhaseTaskCount(1);
+            s._pushLog(`[Micro] ${task.label} ✓ Completed`, "micro");
+            s._pushTick(task.id, task.label, "microtask", "completed");
+            this.enginePhase = "complete-microtask";
+          } else if (task.type === "macrotask" && task.id !== "sync-task-main" && task.id !== "global-script") {
+            s._updateActivePhaseTaskCount(1);
+            s._pushLog(`[Macro] ${task.label} ✓ Completed`, "macro");
+            s._pushTick(task.id, task.label, "macrotask", "completed");
+            this.enginePhase = "complete-macrotask";
+          } else {
+            s._pushLog(`[Stack] ${task.label} completed. Call Stack is now empty.`, "system");
+            s._pushTick(task.id, task.label, "macrotask", "completed");
+            this.enginePhase = "complete-sync-task";
           }
+          
+          this.scheduleNext(this.delay(BASE_TIMING.completing));
+          this.completeStepIfNeeded();
+          return;
         }
 
-        this.scheduleChildIfNeeded(task);
-        s._completeTask(task);
-        s._updateActivePhaseTaskCount(1);
-        s._pushLog(`[Macro] ${task.label} ✓ Completed`, "macro");
-        s._pushTick(task.id, task.label, "macrotask", "completed");
-        this.enginePhase = "complete-macrotask";
-        this.scheduleNext(this.delay(BASE_TIMING.completing));
+        const tick = ticks[this.currentTickIndex++];
+
+        if (tick.line !== undefined) {
+          s._setActiveLine(tick.line);
+        }
+
+        if (tick.event === "Push Frame" && tick.frameName) {
+          s._pushFrame(tick.frameName);
+        } else if (tick.event === "Pop Frame") {
+          s._popFrame();
+        } else if (tick.event === "Async Function Suspended") {
+          s._pushLog(`[Async] ${tick.frameName} Suspended`, "system");
+        } else if (tick.event === "Async Function Resumed") {
+          s._pushFrame(tick.frameName || "async");
+          s._pushLog(`[Async] ${tick.frameName} Resumed`, "system");
+        } else if (tick.event.startsWith("console.log(")) {
+          const msg = tick.event.substring(13, tick.event.length - 2);
+          if (s._addConsoleLogs) s._addConsoleLogs([msg]);
+          s._pushLog(`[Console] ${msg}`, "system");
+        }
+        
+        s._pushTick(task.id, task.label, task.type, tick.event, tick.line, tick.column);
+
+        // Sub-step delay per execution tick
+        this.scheduleNext(this.delay(200)); 
         this.completeStepIfNeeded();
         return;
       }

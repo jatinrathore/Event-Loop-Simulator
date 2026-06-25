@@ -1,12 +1,22 @@
 "use client";
 
-import { useRuntimeStore } from "@/app/_lib/store";
+import { useStoreContext as useRuntimeStore } from "@/app/_components/StoreProvider";
 import TaskCard from "./TaskCard";
 
 export default function CallStack() {
-  const { callStack, currentTask } = useRuntimeStore();
+  const { callStack, callStackFrames, currentTask } = useRuntimeStore();
 
   const isExecuting = currentTask?.status === "executing";
+
+  const combinedStack: any[] = [
+    ...callStack,
+    ...callStackFrames.map((f) => ({
+      id: f.id,
+      label: f.name + "()",
+      status: "executing",
+      type: "function-frame"
+    }))
+  ];
 
   return (
     <div
@@ -58,7 +68,7 @@ export default function CallStack() {
             border: `1px solid ${callStack.length > 0 ? "rgba(59, 130, 246, 0.3)" : "var(--border-subtle)"}`,
           }}
         >
-          {callStack.length}
+          {combinedStack.length}
         </span>
       </div>
 
@@ -94,7 +104,7 @@ export default function CallStack() {
             <span style={{ opacity: 0.5 }}>Stack is empty</span>
           </div>
         ) : (
-          callStack.map((task, i) => (
+          combinedStack.map((task, i) => (
             <div
               key={task.id}
               className="animate-slide-right"
@@ -125,9 +135,16 @@ export default function CallStack() {
                   flexShrink: 0,
                 }}
               >
-                {callStack.length - i}
+                {combinedStack.length - i}
               </span>
-              <TaskCard task={task} size="sm" />
+              {task.type === "function-frame" ? (
+                <div style={{ flex: 1, fontSize: 11, fontWeight: 600, color: "var(--stack-primary)", fontFamily: "JetBrains Mono, monospace" }}>
+                  <span style={{color: "var(--text-muted)", marginRight: 6}}>ƒ</span>
+                  {task.label}
+                </div>
+              ) : (
+                <TaskCard task={task} size="sm" />
+              )}
               {task.status === "executing" && (
                 <span
                   style={{

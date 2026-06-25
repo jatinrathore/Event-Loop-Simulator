@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
-import { useRuntimeStore } from "@/app/_lib/store";
+import { useStoreContext as useRuntimeStore } from "@/app/_components/StoreProvider";
 
 export default function TimelineView() {
   const { phaseHistory, microtaskQueue, macrotaskQueue, currentPhase, isRunning } = useRuntimeStore();

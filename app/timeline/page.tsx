@@ -1,11 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import AppShell from "@/app/_components/layout/AppShell";
-import TimelineView from "@/app/_components/bottom/TimelineView";
-import { useRuntimeStore } from "@/app/_lib/store";
+import { useTimelineHistoryStore, TimelineSource, TimelineSession } from "@/app/_lib/timelineStore";
 
 export default function TimelinePage() {
-  const { timelineTicks, completedTasks, currentPhaseNumber } = useRuntimeStore();
+  return <TimelineContent />;
+}
+
+function TimelineContent() {
+  const { sessions } = useTimelineHistoryStore();
+  const [filter, setFilter] = useState<"All" | TimelineSource>("All");
+
+  const filteredSessions = sessions.filter(
+    (s) => filter === "All" || s.source === filter
+  );
 
   return (
     <AppShell>
@@ -17,7 +26,7 @@ export default function TimelinePage() {
           overflow: "hidden",
         }}
       >
-        {/* Header */}
+        {/* Header with Filters */}
         <div
           style={{
             padding: "14px 20px",
@@ -25,27 +34,46 @@ export default function TimelinePage() {
             background: "var(--bg-surface)",
             display: "flex",
             alignItems: "center",
-            gap: 12,
+            justifyContent: "space-between",
             flexShrink: 0,
           }}
         >
-          <h1 style={{ fontSize: 16, fontWeight: 700 }}>Execution Timeline</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <h1 style={{ fontSize: 16, fontWeight: 700 }}>Execution Timeline</h1>
+            
+            <div style={{ display: "flex", background: "var(--bg-elevated)", padding: 4, borderRadius: 8, gap: 4 }}>
+              {(["All", "Simulator", "Code Analyzer"] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  style={{
+                    padding: "4px 12px",
+                    fontSize: 11,
+                    fontWeight: 600,
+                    borderRadius: 6,
+                    border: "none",
+                    background: filter === f ? "var(--border-default)" : "transparent",
+                    color: filter === f ? "var(--text-primary)" : "var(--text-muted)",
+                    cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  {f === "All" ? "All Activity" : `${f} Only`}
+                </button>
+              ))}
+            </div>
+          </div>
+          
           <div style={{ display: "flex", gap: 12, fontSize: 12, color: "var(--text-secondary)" }}>
             <span>
-              <strong style={{ color: "var(--text-primary)" }}>{timelineTicks.length}</strong> ticks
-            </span>
-            <span>
-              <strong style={{ color: "var(--text-primary)" }}>{completedTasks.length}</strong> completed
-            </span>
-            <span>
-              Phase <strong style={{ color: "var(--stack-primary)" }}>{currentPhaseNumber}</strong>
+              <strong style={{ color: "var(--text-primary)" }}>{filteredSessions.length}</strong> sessions
             </span>
           </div>
         </div>
 
-        {/* Timeline */}
-        <div style={{ flex: 1, padding: 20, overflow: "auto" }}>
-          {timelineTicks.length === 0 ? (
+        {/* Timeline Sessions List */}
+        <div style={{ flex: 1, padding: "20px 40px", overflow: "auto" }}>
+          {filteredSessions.length === 0 ? (
             <div
               style={{
                 height: "100%",
@@ -64,80 +92,109 @@ export default function TimelinePage() {
                 <circle cx="17" cy="12" r="2" />
               </svg>
               <p style={{ fontSize: 14, opacity: 0.5 }}>
-                No timeline data yet. Run a simulation first.
+                No timeline data yet. Run a simulation or analysis first.
               </p>
-              <a href="/simulator" className="btn btn-primary" style={{ textDecoration: "none" }}>
-                Go to Simulator →
-              </a>
             </div>
           ) : (
-            <div style={{ height: 200, background: "var(--bg-surface)", borderRadius: 12, border: "1px solid var(--border-subtle)", padding: 12, overflow: "auto" }}>
-              <TimelineView />
-            </div>
-          )}
-
-          {/* Tick details table */}
-          {timelineTicks.length > 0 && (
-            <div style={{ marginTop: 20 }}>
-              <h2 style={{ fontSize: 13, fontWeight: 700, color: "var(--text-secondary)", marginBottom: 12, letterSpacing: "0.06em" }}>
-                TICK DETAILS
-              </h2>
-              <div
-                style={{
-                  background: "var(--bg-surface)",
-                  border: "1px solid var(--border-subtle)",
-                  borderRadius: 10,
-                  overflow: "hidden",
-                }}
-              >
-                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-                  <thead>
-                    <tr style={{ background: "var(--bg-elevated)" }}>
-                      {["Tick", "Task", "Type", "Event"].map((h) => (
-                        <th key={h} style={{ padding: "8px 14px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {timelineTicks.map((tick, i) => (
-                      <tr
-                        key={tick.id}
-                        style={{
-                          borderTop: "1px solid var(--border-subtle)",
-                          background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)",
-                        }}
-                      >
-                        <td style={{ padding: "7px 14px", color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace" }}>
-                          {tick.tick}
-                        </td>
-                        <td style={{ padding: "7px 14px", fontFamily: "JetBrains Mono, monospace", color: tick.taskType === "microtask" ? "var(--micro-primary)" : "var(--macro-primary)" }}>
-                          {tick.taskLabel}
-                        </td>
-                        <td style={{ padding: "7px 14px" }}>
-                          <span
-                            className="phase-badge"
-                            style={{
-                              background: tick.taskType === "microtask" ? "rgba(139,92,246,0.1)" : "rgba(245,158,11,0.1)",
-                              color: tick.taskType === "microtask" ? "var(--micro-primary)" : "var(--macro-primary)",
-                            }}
-                          >
-                            {tick.taskType}
-                          </span>
-                        </td>
-                        <td style={{ padding: "7px 14px", color: "var(--text-secondary)" }}>
-                          {tick.event}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 32, paddingBottom: 60 }}>
+              {filteredSessions.map((session) => (
+                <SessionGroup key={session.id} session={session} />
+              ))}
             </div>
           )}
         </div>
       </div>
     </AppShell>
+  );
+}
+
+function SessionGroup({ session }: { session: TimelineSession }) {
+  const isAnalyzer = session.source === "Code Analyzer";
+  const accentColor = isAnalyzer ? "var(--macro-primary)" : "var(--loop-primary)";
+  const bgColor = isAnalyzer ? "rgba(245, 158, 11, 0.05)" : "rgba(59, 130, 246, 0.05)";
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+      }}
+    >
+      {/* Session Header */}
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <h2 style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>
+          {session.source} Run #{session.runNumber}
+        </h2>
+        <span style={{ fontSize: 11, color: "var(--text-muted)" }}>
+          {new Date(session.timestamp).toLocaleTimeString()}
+        </span>
+      </div>
+
+      {/* Events */}
+      <div
+        style={{
+          background: "var(--bg-surface)",
+          border: `1px solid var(--border-subtle)`,
+          borderRadius: 12,
+          overflow: "hidden",
+        }}
+      >
+        {session.entries.length === 0 ? (
+          <div style={{ padding: "16px 20px", fontSize: 12, color: "var(--text-muted)", fontStyle: "italic" }}>
+            No events recorded in this run.
+          </div>
+        ) : (
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+            <thead>
+              <tr style={{ background: bgColor }}>
+                {["Time", "Task Type", "Task Label", "Event", "Iteration"].map((h) => (
+                  <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "var(--text-muted)", letterSpacing: "0.08em", textTransform: "uppercase", borderBottom: "1px solid var(--border-subtle)" }}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {session.entries.map((tick, i) => (
+                <tr
+                  key={tick.id}
+                  style={{
+                    borderBottom: i < session.entries.length - 1 ? "1px solid var(--border-subtle)" : "none",
+                    background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)",
+                  }}
+                >
+                  <td style={{ padding: "10px 16px", color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace", width: 100 }}>
+                    {tick.timeString}
+                  </td>
+                  <td style={{ padding: "10px 16px", width: 120 }}>
+                    {tick.taskType && (
+                      <span
+                        className="phase-badge"
+                        style={{
+                          background: tick.taskType === "microtask" ? "rgba(139,92,246,0.1)" : tick.taskType === "macrotask" ? "rgba(245,158,11,0.1)" : "rgba(100,100,100,0.1)",
+                          color: tick.taskType === "microtask" ? "var(--micro-primary)" : tick.taskType === "macrotask" ? "var(--macro-primary)" : "var(--text-secondary)",
+                        }}
+                      >
+                        {tick.taskType}
+                      </span>
+                    )}
+                  </td>
+                  <td style={{ padding: "10px 16px", fontFamily: "JetBrains Mono, monospace", color: tick.taskType === "microtask" ? "var(--micro-primary)" : tick.taskType === "macrotask" ? "var(--macro-primary)" : "var(--text-primary)" }}>
+                    {tick.taskLabel || "-"}
+                  </td>
+                  <td style={{ padding: "10px 16px", color: "var(--text-secondary)" }}>
+                    {tick.eventLabel}
+                  </td>
+                  <td style={{ padding: "10px 16px", color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace", width: 80 }}>
+                    {tick.iteration !== undefined ? `#${tick.iteration}` : "-"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
   );
 }

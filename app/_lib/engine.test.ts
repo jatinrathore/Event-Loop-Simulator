@@ -123,11 +123,12 @@ function createTestStore(
       // no-op for test tracking (state is already tracked above)
     },
 
-    _pushLog(msg) {
-      state.logs.push(msg);
-    },
-
-    _pushTick() {},
+    _pushLog: vi.fn(),
+    _pushTick: vi.fn(),
+    _setActiveLine: vi.fn(),
+    _pushFrame: vi.fn(),
+    _popFrame: vi.fn(),
+    _clearFrames: vi.fn(),
   };
 
   return { store, state };

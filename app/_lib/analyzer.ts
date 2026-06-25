@@ -6,10 +6,18 @@ import { Task, TaskType } from "./types";
 class Scope {
   parent: Scope | null;
   bindings: Record<string, any>;
+  name?: string;
 
-  constructor(parent: Scope | null = null) {
+  constructor(parent: Scope | null = null, name?: string) {
     this.parent = parent;
     this.bindings = {};
+    this.name = name;
+  }
+
+  getScopeName(): string | undefined {
+    if (this.name) return this.name;
+    if (this.parent) return this.parent.getScopeName();
+    return undefined;
   }
 
   get(name: string): any {
@@ -43,6 +51,7 @@ class Scope {
 
 interface Closure {
   type: "function";
+  name?: string;
   params: string[];
   body: any;
   scope: Scope;
@@ -139,10 +148,7 @@ class VirtualPromise {
   }
 
   then(onFulfilled?: any, onRejected?: any): VirtualPromise {
-    if (activeTask) {
-      if (!activeTask.executionTicks) activeTask.executionTicks = [];
-      activeTask.executionTicks.push({ event: "Promise.then Registered", type: "sync" });
-    }
+    // Promise.then execution tick handled in MemberExpression
 
     const nextPromise = new VirtualPromise();
     this.deferred.push({
@@ -235,7 +241,20 @@ function executeCallbackInVM(callback: any, args: any[], cont: (val: any) => voi
 }
 
 function invokeClosure(closure: Closure, args: any[], cont: (val: any) => void) {
-  const localScope = new Scope(closure.scope);
+  const localScope = new Scope(closure.scope, closure.name || "anonymous");
+  if (activeTask && closure.name) {
+    if (!activeTask.executionTicks) activeTask.executionTicks = [];
+    activeTask.executionTicks.push({ event: "Push Frame", type: "system", frameName: closure.name });
+  }
+
+  const doReturnCont = (val: any) => {
+    if (activeTask && closure.name) {
+      if (!activeTask.executionTicks) activeTask.executionTicks = [];
+      activeTask.executionTicks.push({ event: "Pop Frame", type: "system", frameName: closure.name });
+    }
+    cont(val);
+  };
+
   for (let i = 0; i < closure.params.length; i++) {
     localScope.declare(closure.params[i], args[i]);
   }
@@ -252,13 +271,13 @@ function invokeClosure(closure: Closure, args: any[], cont: (val: any) => void) 
           wrapperPromise.resolve(retVal);
         }
       );
-      cont(wrapperPromise);
+      doReturnCont(wrapperPromise);
     } else {
-      executeStatements(bodyNodes, 0, localScope, cont, cont);
+      executeStatements(bodyNodes, 0, localScope, doReturnCont, doReturnCont);
     }
   } else if (closure.body.type === "CustomContinuation") {
     closure.body.execute();
-    cont(undefined);
+    doReturnCont(undefined);
   } else {
     // Shorthand arrow function body is an expression!
     if (closure.isAsync) {
@@ -266,9 +285,9 @@ function invokeClosure(closure: Closure, args: any[], cont: (val: any) => void) 
       evaluateExpression(closure.body, localScope, (val) => {
         wrapperPromise.resolve(val);
       });
-      cont(wrapperPromise);
+      doReturnCont(wrapperPromise);
     } else {
-      evaluateExpression(closure.body, localScope, cont);
+      evaluateExpression(closure.body, localScope, doReturnCont);
     }
   }
 }
@@ -359,7 +378,7 @@ function evaluateExpression(node: any, scope: Scope, cont: (val: any) => void): 
                 if (!activeTask.consoleLogs) activeTask.consoleLogs = [];
                 activeTask.consoleLogs.push(msg);
                 if (!activeTask.executionTicks) activeTask.executionTicks = [];
-                activeTask.executionTicks.push({ event: `console.log("${msg}")`, type: "sync" });
+                activeTask.executionTicks.push({ event: `console.log("${msg}")`, type: "sync", line: node.loc?.start?.line });
               }
               expectedOutput.push(msg);
             },
@@ -384,6 +403,7 @@ function evaluateExpression(node: any, scope: Scope, cont: (val: any) => void): 
     case "FunctionExpression": {
       cont({
         type: "function",
+        name: node.id ? node.id.name : "anonymous",
         params: node.params.map((p: any) => p.name),
         body: node.body,
         scope,
@@ -398,15 +418,30 @@ function evaluateExpression(node: any, scope: Scope, cont: (val: any) => void): 
           ? val
           : VirtualPromise.resolve(val);
 
-        if (promise.state === "fulfilled") {
+        const frameName = scope.getScopeName() || "async function";
+        if (activeTask) {
+          if (!activeTask.executionTicks) activeTask.executionTicks = [];
+          activeTask.executionTicks.push({ event: "Async Function Suspended", type: "system", line: node.loc?.start?.line, frameName });
+        }
+
+        const enqueueContinuation = (resolvedVal: any) => {
           enqueueMicrotask(() => {
-            cont(promise.value);
+            if (activeTask) {
+              if (!activeTask.executionTicks) activeTask.executionTicks = [];
+              activeTask.executionTicks.push({ event: "Async Function Resumed", type: "system", line: node.loc?.start?.line, frameName });
+            }
+            cont(resolvedVal);
+            if (activeTask) {
+              activeTask.executionTicks!.push({ event: "Pop Frame", type: "system", frameName });
+            }
           }, "await continuation");
+        };
+
+        if (promise.state === "fulfilled") {
+          enqueueContinuation(promise.value);
         } else {
           promise.then((resolvedVal: any) => {
-            enqueueMicrotask(() => {
-              cont(resolvedVal);
-            }, "await continuation");
+            enqueueContinuation(resolvedVal);
           });
         }
       });
@@ -502,6 +537,11 @@ function executeStatement(node: any, scope: Scope, cont: () => void, returnCont:
     throw new Error("VM Protection: Maximum AST execution limit exceeded.");
   }
 
+  if (activeTask && node.loc && node.type !== "BlockStatement" && node.type !== "FunctionDeclaration" && node.type !== "CustomContinuation") {
+    if (!activeTask.executionTicks) activeTask.executionTicks = [];
+    activeTask.executionTicks.push({ event: `Execute ${node.type}`, type: "system", line: node.loc.start.line, column: node.loc.start.column });
+  }
+
   switch (node.type) {
     case "VariableDeclaration": {
       executeDeclarators(node.declarations, 0, scope, cont);
@@ -524,6 +564,7 @@ function executeStatement(node: any, scope: Scope, cont: () => void, returnCont:
     case "FunctionDeclaration": {
       const closure: Closure = {
         type: "function",
+        name: node.id.name,
         params: node.params.map((p: any) => p.name),
         body: node.body,
         scope,
@@ -670,7 +711,7 @@ export function parseAndPlan(code: string): AnalysisResult {
 
   let ast: any;
   try {
-    ast = acorn.parse(code, { ecmaVersion: "latest", sourceType: "module" });
+    ast = acorn.parse(code, { ecmaVersion: "latest", sourceType: "module", locations: true });
   } catch (err: any) {
     return { success: false, error: err.message };
   }

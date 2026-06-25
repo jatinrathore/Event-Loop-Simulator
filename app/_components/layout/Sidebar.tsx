@@ -61,6 +61,7 @@ export default function Sidebar() {
 
   return (
     <aside
+      className="app-sidebar"
       style={{
         width: "var(--sidebar-width)",
         minWidth: "var(--sidebar-width)",
@@ -139,27 +140,98 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer badge */}
+      {/* Developer Attribution Section */}
       <div
-        className="sidebar-footer-text"
+        className="sidebar-dev-attribution"
         style={{
-          padding: "10px 12px",
+          padding: "12px 10px 20px",
           borderTop: "1px solid var(--border-subtle)",
+          display: "flex",
+          flexDirection: "column",
+          gap: "4px",
+          marginTop: "auto",
         }}
       >
-        <div
-          style={{
-            fontSize: 10,
-            color: "var(--text-muted)",
-            display: "flex",
-            flexDirection: "column",
-            gap: "2px",
-          }}
-        >
-          <span style={{ color: "var(--text-secondary)", fontWeight: 600, fontSize: 11 }}>
-            Simulation Engine
-          </span>
-          <span>JS Runtime Visualizer</span>
+        <span className="dev-info-text" style={{ fontSize: "10px", color: "var(--text-muted)", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+          Built by
+        </span>
+        <span className="dev-info-text" style={{ fontWeight: 600, color: "var(--text-primary)", fontSize: "12px", lineHeight: 1.2 }}>
+          Jatin Rathore
+        </span>
+        <span className="dev-info-text" style={{ fontSize: "10px", color: "var(--text-secondary)", fontWeight: 500, lineHeight: 1.1 }}>
+          Frontend Engineer
+        </span>
+        <div className="dev-links-container" style={{ display: "flex", gap: "10px", marginTop: "6px", borderTop: "1px solid var(--border-subtle)", paddingTop: "6px", flexWrap: "wrap" }}>
+          <a
+            href="https://github.com/jatinrathore"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Visit GitHub Profile"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              color: "var(--text-secondary)",
+              textDecoration: "none",
+              fontSize: "10px",
+              transition: "color 0.2s",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = "var(--text-primary)"}
+            onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-secondary)"}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+            </svg>
+            <span className="dev-info-text">GitHub</span>
+          </a>
+          <a
+            href="https://www.linkedin.com/in/jatinrathore168/"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Visit LinkedIn Profile"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              color: "var(--text-secondary)",
+              textDecoration: "none",
+              fontSize: "10px",
+              transition: "color 0.2s",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = "var(--text-primary)"}
+            onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-secondary)"}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+              <rect x="2" y="9" width="4" height="12" />
+              <circle cx="4" cy="4" r="2" />
+            </svg>
+            <span className="dev-info-text">LinkedIn</span>
+          </a>
+          <a
+            href="mailto:rathorejatin168@gmail.com"
+            title="Send Email"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              color: "var(--text-secondary)",
+              textDecoration: "none",
+              fontSize: "10px",
+              transition: "color 0.2s",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = "var(--text-primary)"}
+            onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-secondary)"}
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <polyline points="22,6 12,13 2,6" />
+            </svg>
+            <span className="dev-info-text">Email</span>
+          </a>
+        </div>
+        <div className="dev-info-text" style={{ fontSize: "9px", color: "var(--text-muted)", marginTop: "6px", alignSelf: "flex-end" }}>
+          v2.0.0
         </div>
       </div>
     </aside>

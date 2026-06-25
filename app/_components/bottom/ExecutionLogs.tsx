@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { useRuntimeStore } from "@/app/_lib/store";
+import { useStoreContext as useRuntimeStore } from "@/app/_components/StoreProvider";
 
 const TYPE_COLORS: Record<string, string> = {
   micro: "log-msg-micro",

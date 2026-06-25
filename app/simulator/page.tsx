@@ -6,8 +6,18 @@ import VisualizationArea from "@/app/_components/visualization/VisualizationArea
 import TimelineView from "@/app/_components/bottom/TimelineView";
 import ExecutionLogs from "@/app/_components/bottom/ExecutionLogs";
 import StatsPanel from "@/app/_components/stats/StatsPanel";
+import { StoreProvider } from "@/app/_components/StoreProvider";
+import { useSimulatorStore } from "@/app/_lib/store";
 
 export default function SimulatorPage() {
+  return (
+    <StoreProvider store={useSimulatorStore}>
+      <SimulatorContent />
+    </StoreProvider>
+  );
+}
+
+function SimulatorContent() {
   return (
     <AppShell>
       <div
@@ -56,7 +66,7 @@ export default function SimulatorPage() {
 
           {/* Center Content Column */}
           <div className="sim-center-column">
-            <StatsPanel />
+            <StatsPanel showMetrics={true} />
             <VisualizationArea />
             
             {/* Bottom Timeline and Logs both visible simultaneously */}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRuntimeStore } from "@/app/_lib/store";
+import { useStoreContext as useRuntimeStore } from "@/app/_components/StoreProvider";
 import { Task, TaskType } from "@/app/_lib/types";
 
 export default function TaskScheduleConfig() {

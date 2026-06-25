@@ -1,6 +1,6 @@
 "use client";
 
-import { create } from "zustand";
+import { create, StateCreator } from "zustand";
 import { v4 as uuid } from "uuid";
 import {
   RuntimeState,
@@ -17,6 +17,7 @@ import {
   CallStackScenario,
   ScenarioPreset,
 } from "./types";
+import { useTimelineHistoryStore, TimelineSource } from "./timelineStore";
 
 // ─── Label rotation counters ──────────────────────────────────────────────────
 let microLabelIdx = 0;
@@ -26,6 +27,8 @@ let macroLabelIdx = 0;
 
 const initialState: RuntimeState & { phaseHistory: PhaseEntry[] } = {
   callStack: [],
+  callStackFrames: [],
+  activeLine: null,
   microtaskQueue: [],
   macrotaskQueue: [],
   completedTasks: [],
@@ -45,11 +48,13 @@ const initialState: RuntimeState & { phaseHistory: PhaseEntry[] } = {
   consoleOutput: [],
   expectedOutput: [],
   analyzerCode: "",
+  guessMode: false,
+  userPrediction: [],
 };
 
 // ─── Store interface ──────────────────────────────────────────────────────────
 
-interface RuntimeStore extends RuntimeState {
+export interface RuntimeStore extends RuntimeState {
   phaseHistory: PhaseEntry[];
 
   // User-facing actions
@@ -70,6 +75,8 @@ interface RuntimeStore extends RuntimeState {
     expectedOutput: string[],
     phases?: Array<{ kind: "global-script" | "microtask-drain" | "macrotask"; label: string; taskCount: number }>
   ) => void;
+  setGuessMode: (enabled: boolean) => void;
+  setUserPrediction: (prediction: string[]) => void;
 
   // Engine-facing internal mutations
   _setPhase: (phase: RuntimePhase) => void;
@@ -90,15 +97,19 @@ interface RuntimeStore extends RuntimeState {
   _updateActivePhaseTaskCount: (delta: number) => void;
   _completeActivePhase: () => void;
   _pushLog: (message: string, type: LogType) => void;
-  _pushTick: (taskId: string, taskLabel: string, taskType: TaskType, event: string) => void;
+  _pushTick: (taskId: string, taskLabel: string, taskType: TaskType, event: string, line?: number, column?: number) => void;
+  _setActiveLine: (line: number | null) => void;
+  _pushFrame: (name: string) => void;
+  _popFrame: () => void;
+  _clearFrames: () => void;
   _setEducationalText: (text: string) => void;
   _addScheduledTask: (task: Task) => void;
   _addConsoleLogs: (logs: string[]) => void;
 }
 
-// ─── Store ────────────────────────────────────────────────────────────────────
+// ─── Store Factory ────────────────────────────────────────────────────────────
 
-export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
+const createStoreFactory = (source: TimelineSource): StateCreator<RuntimeStore> => (set, get) => ({
   ...initialState,
 
   // ─── User Actions ─────────────────────────────────────────────────────────
@@ -138,6 +149,7 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
     if (isRunning) return;
     if (microtaskQueue.length === 0 && macrotaskQueue.length === 0 && get().callStack.length === 0) return;
     
+    useTimelineHistoryStore.getState().startSession(source);
     get()._pushLog("[Init] Simulation Started", "system");
     set({ isRunning: true, isPaused: false });
   },
@@ -214,6 +226,20 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
     set({ analyzerCode: code });
   },
 
+  setGuessMode: (enabled) => {
+    set((state) => {
+      let newUserPrediction = state.userPrediction;
+      if (enabled && state.expectedOutput.length > 0 && state.userPrediction.length === 0) {
+        newUserPrediction = state.expectedOutput.slice().sort(() => Math.random() - 0.5);
+      }
+      return { guessMode: enabled, userPrediction: newUserPrediction };
+    });
+  },
+
+  setUserPrediction: (prediction) => {
+    set({ userPrediction: prediction });
+  },
+
   loadAnalyzerPreset: (tasks, expectedOutput, phases) => {
     const mainTask = tasks.find((t) => t.id === "sync-task-main" || t.id === "global-script");
     const otherTasks = tasks.filter((t) => t.id !== "sync-task-main" && t.id !== "global-script");
@@ -247,11 +273,14 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
       expectedOutput,
       phaseHistory: initialPhases,
       consoleOutput: [],
+      userPrediction: get().guessMode ? expectedOutput.slice().sort(() => Math.random() - 0.5) : [],
       analyzerCode: get().analyzerCode,
+      guessMode: get().guessMode,
       isRunning: false,
       isPaused: false,
     });
 
+    useTimelineHistoryStore.getState().startSession(source);
     get()._pushLog("[Analyzer] Code analysis complete. Simulation queues ready.", "system");
   },
 
@@ -265,9 +294,11 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
 
     if (preset === "basic") {
       set(baseState);
+      useTimelineHistoryStore.getState().startSession(source);
       get()._pushLog("[Preset] Applied: Basic (Empty)", "system");
     } else if (preset === "call-stack-busy") {
       set(baseState);
+      useTimelineHistoryStore.getState().startSession(source);
       get().setCallStackScenario("busy-sync");
       // Add a couple of dummy tasks so they can start after stack clears
       get().addMicrotask();
@@ -286,9 +317,11 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
       set({
         macrotaskQueue: [task],
       });
-      get()._pushLog("[Preset] Applied: Macrotask Schedules Microtask", "system");
+      useTimelineHistoryStore.getState().startSession(source);
+      get()._pushLog("[Preset] Applied: Macro schedules Micro", "system");
     } else if (preset === "nested-microtasks") {
       set(baseState);
+      useTimelineHistoryStore.getState().startSession(source);
       const task: Task = {
         id: uuid(),
         label: "queueMicrotask() (M1)",
@@ -441,10 +474,14 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
       message,
       type,
     };
+    useTimelineHistoryStore.getState().addEvent({
+      eventLabel: message,
+      taskType: type === "system" ? "system" : type === "info" ? undefined : type === "micro" ? "microtask" : "macrotask",
+    });
     set((s) => ({ executionLogs: [...s.executionLogs, entry] }));
   },
 
-  _pushTick: (taskId, taskLabel, taskType, event) => {
+  _pushTick: (taskId, taskLabel, taskType, event, line, column) => {
     const state = get();
     const tick = state.tickCounter + 1;
     const tickEntry: TimelineTick = {
@@ -455,12 +492,34 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
       taskType,
       event,
       timestamp: Date.now(),
+      line,
+      column,
     };
+    
+    useTimelineHistoryStore.getState().addEvent({
+      eventLabel: event,
+      taskLabel: taskLabel,
+      taskType: taskType,
+      iteration: state.currentPhaseNumber,
+    });
+
     set((s) => ({
       timelineTicks: [...s.timelineTicks, tickEntry],
       tickCounter: tick,
     }));
   },
+
+  _setActiveLine: (line) => set({ activeLine: line }),
+
+  _pushFrame: (name) => set((s) => ({ 
+    callStackFrames: [...s.callStackFrames, { id: uuid(), name }] 
+  })),
+
+  _popFrame: () => set((s) => ({
+    callStackFrames: s.callStackFrames.slice(0, -1)
+  })),
+
+  _clearFrames: () => set({ callStackFrames: [] }),
 
   _setEducationalText: (text) => set({ educationalText: text }),
 
@@ -488,4 +547,10 @@ export const useRuntimeStore = create<RuntimeStore>((set, get) => ({
   _addConsoleLogs: (logs) => {
     set((s) => ({ consoleOutput: [...s.consoleOutput, ...logs] }));
   },
-}));
+});
+
+export const useSimulatorStore = create<RuntimeStore>(createStoreFactory("Simulator"));
+export const useAnalyzerStore = create<RuntimeStore>(createStoreFactory("Code Analyzer"));
+
+// Temporarily alias useRuntimeStore for components we haven't refactored yet
+export const useRuntimeStore = useSimulatorStore;

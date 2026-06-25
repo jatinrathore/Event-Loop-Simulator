@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import Editor from "@monaco-editor/react";
 import AppShell from "@/app/_components/layout/AppShell";
 import VisualizationArea from "@/app/_components/visualization/VisualizationArea";
-import TimelineView from "@/app/_components/bottom/TimelineView";
 import StatsPanel from "@/app/_components/stats/StatsPanel";
-import { useRuntimeStore } from "@/app/_lib/store";
+import ConsolePanel from "@/app/_components/console/ConsolePanel";
+import { useStoreContext as useRuntimeStore, useStoreInstance } from "@/app/_components/StoreProvider";
 import { simulationEngine } from "@/app/_lib/engine";
 import { parseAndPlan } from "@/app/_lib/analyzer";
-import { SPEED_MULTIPLIERS } from "@/app/_lib/types";
+import SpeedControl from "@/app/_components/controls/SpeedControl";
+import { StoreProvider } from "@/app/_components/StoreProvider";
+import { useAnalyzerStore } from "@/app/_lib/store";
 
 // ─── Preset Templates ────────────────────────────────────────────────────────
 
@@ -77,7 +79,16 @@ Promise.resolve().then(() => {
 ];
 
 export default function CodeAnalyzerPage() {
-  const store = useRuntimeStore();
+  return (
+    <StoreProvider store={useAnalyzerStore}>
+      <CodeAnalyzerContent />
+    </StoreProvider>
+  );
+}
+
+function CodeAnalyzerContent() {
+  const storeInstance = useStoreInstance();
+  const store = useRuntimeStore((state) => state);
   const {
     analyzerCode,
     setAnalyzerCode,
@@ -86,13 +97,14 @@ export default function CodeAnalyzerPage() {
     expectedOutput,
     isRunning,
     isPaused,
-    speed,
-    setSpeed,
     startSimulation,
     pauseSimulation,
     resumeSimulation,
     resetSimulation,
     stepForward,
+    activeLine,
+    guessMode,
+    setGuessMode,
   } = store;
 
   const [editorCode, setEditorCode] = useState(analyzerCode || PRESETS[0].code);
@@ -103,6 +115,15 @@ export default function CodeAnalyzerPage() {
 
   const engineStarted = useRef(false);
   const hasMounted = useRef(false);
+  
+  const editorRef = useRef<any>(null);
+  const monacoRef = useRef<any>(null);
+  const decorationsRef = useRef<any[]>([]);
+
+  const handleEditorDidMount = (editor: any, monaco: any) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+  };
 
   // Sync component state with store code on mount
   useEffect(() => {
@@ -120,7 +141,7 @@ export default function CodeAnalyzerPage() {
     if (isRunning && !isPaused) {
       if (!engineStarted.current) {
         engineStarted.current = true;
-        simulationEngine.start(useRuntimeStore.getState);
+        simulationEngine.start(storeInstance.getState);
       }
     }
     if (!isRunning) {
@@ -128,6 +149,29 @@ export default function CodeAnalyzerPage() {
       simulationEngine.stop();
     }
   }, [isRunning, isPaused]);
+
+  // Line highlighting effect
+  useEffect(() => {
+    if (editorRef.current && monacoRef.current) {
+      if (activeLine) {
+        decorationsRef.current = editorRef.current.deltaDecorations(
+          decorationsRef.current,
+          [
+            {
+              range: new monacoRef.current.Range(activeLine, 1, activeLine, 1),
+              options: {
+                isWholeLine: true,
+                className: 'active-line-decoration',
+              }
+            }
+          ]
+        );
+        editorRef.current.revealLineInCenterIfOutsideViewport(activeLine);
+      } else {
+        decorationsRef.current = editorRef.current.deltaDecorations(decorationsRef.current, []);
+      }
+    }
+  }, [activeLine]);
 
   // Handle Monaco validation errors
   const handleEditorValidation = (markers: any[]) => {
@@ -169,14 +213,12 @@ export default function CodeAnalyzerPage() {
   };
 
   const handleStart = () => {
-    if (!analysisDone) {
-      handleAnalyze();
-    }
+    if (syntaxErrors.length > 0) return;
     startSimulation();
     setTimeout(() => {
       if (!engineStarted.current) {
         engineStarted.current = true;
-        simulationEngine.start(useRuntimeStore.getState);
+        simulationEngine.start(storeInstance.getState);
       }
     }, 50);
   };
@@ -208,10 +250,10 @@ export default function CodeAnalyzerPage() {
       startSimulation();
       engineStarted.current = true;
       setTimeout(() => {
-        simulationEngine.step(useRuntimeStore.getState);
+        simulationEngine.step(storeInstance.getState);
       }, 50);
     } else {
-      simulationEngine.step(useRuntimeStore.getState);
+      simulationEngine.step(storeInstance.getState);
     }
     stepForward();
   };
@@ -319,6 +361,7 @@ export default function CodeAnalyzerPage() {
                 language="javascript"
                 theme="vs-dark"
                 value={editorCode}
+                onMount={handleEditorDidMount}
                 onChange={(val) => {
                   setEditorCode(val || "");
                   setAnalysisDone(false);
@@ -405,11 +448,11 @@ export default function CodeAnalyzerPage() {
             <div
               className="analyzer-controls-card"
               style={{
-                padding: "14px",
+                padding: "10px",
                 borderBottom: "1px solid var(--border-subtle)",
                 display: "flex",
                 flexDirection: "column",
-                gap: 12,
+                gap: 8,
               }}
             >
               {/* Primary Analyze Row */}
@@ -426,8 +469,8 @@ export default function CodeAnalyzerPage() {
                     justifyContent: "center",
                     gap: 8,
                     fontWeight: 700,
-                    fontSize: 12,
-                    padding: "8px 16px",
+                    fontSize: 11,
+                    padding: "6px 12px",
                     boxShadow: syntaxErrors.length === 0 && !isRunning ? "0 0 10px rgba(45, 212, 191, 0.2)" : "none",
                   }}
                 >
@@ -444,10 +487,10 @@ export default function CodeAnalyzerPage() {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: 8,
+                  gap: 6,
                   background: "var(--bg-elevated)",
-                  padding: "12px",
-                  borderRadius: 12,
+                  padding: "8px",
+                  borderRadius: 10,
                   border: "1px solid var(--border-subtle)",
                 }}
               >
@@ -455,7 +498,7 @@ export default function CodeAnalyzerPage() {
                 <button
                   id="btn-start"
                   className="btn btn-success"
-                  style={{ width: "100%", justifyContent: "center", gap: 6 }}
+                  style={{ width: "100%", justifyContent: "center", gap: 6, padding: "6px", fontSize: 11 }}
                   onClick={handleStart}
                   disabled={!canStart || (isRunning && !isPaused)}
                 >
@@ -470,7 +513,7 @@ export default function CodeAnalyzerPage() {
                   <button
                     id="btn-pause"
                     className="btn btn-ghost"
-                    style={{ justifyContent: "center", gap: 4 }}
+                    style={{ justifyContent: "center", gap: 4, padding: "4px", fontSize: 11 }}
                     onClick={handlePause}
                     disabled={!canPause}
                   >
@@ -482,8 +525,8 @@ export default function CodeAnalyzerPage() {
                   </button>
                   <button
                     id="btn-resume"
-                    className="btn btn-ghost"
-                    style={{ justifyContent: "center", gap: 4 }}
+                    className="btn btn-primary"
+                    style={{ justifyContent: "center", gap: 4, padding: "4px", fontSize: 10.5 }}
                     onClick={handleResume}
                     disabled={!canResume}
                   >
@@ -495,11 +538,11 @@ export default function CodeAnalyzerPage() {
                 </div>
 
                 {/* Step / Reset */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }}>
                   <button
                     id="btn-step"
                     className="btn btn-ghost"
-                    style={{ justifyContent: "center", gap: 4 }}
+                    style={{ flex: 1, justifyContent: "center", gap: 4, padding: "4px", fontSize: 10.5 }}
                     onClick={handleStep}
                     disabled={!canStep}
                   >
@@ -512,7 +555,7 @@ export default function CodeAnalyzerPage() {
                   <button
                     id="btn-reset"
                     className="btn btn-danger"
-                    style={{ justifyContent: "center", gap: 4 }}
+                    style={{ flex: 1, justifyContent: "center", gap: 4, padding: "4px", fontSize: 10.5 }}
                     onClick={handleReset}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -524,191 +567,42 @@ export default function CodeAnalyzerPage() {
                 </div>
 
                 {/* Speed Row */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 4 }}>
-                  <span style={{ fontSize: 9.5, color: "var(--text-muted)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    Speed:
-                  </span>
-                  <select
-                    value={speed}
-                    onChange={(e) => setSpeed(Number(e.target.value))}
-                    style={{
-                      background: "var(--bg-base)",
-                      color: "var(--text-primary)",
-                      border: "1px solid var(--border-subtle)",
-                      borderRadius: 6,
-                      fontSize: 11,
-                      padding: "3px 6px",
-                      outline: "none",
-                      cursor: "pointer",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {SPEED_MULTIPLIERS.map((mult) => (
-                      <option key={mult} value={mult}>
-                        {mult}x
-                      </option>
-                    ))}
-                  </select>
+                <div style={{ marginTop: 8, padding: "4px" }}>
+                  <SpeedControl />
                 </div>
               </div>
+
+              {/* Guess Mode Toggle moved to ConsolePanel */}
             </div>
 
-            {/* Expected Console Output Panel (Terminal-style) */}
-            <div className="analyzer-console-card" style={{ padding: "14px", flex: 1, display: "flex", flexDirection: "column", minHeight: "220px" }}>
-              <div
-                style={{
-                  fontSize: 10,
-                  fontWeight: 700,
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  color: "var(--text-muted)",
-                  marginBottom: 8,
-                }}
-              >
-                Console Output
-              </div>
-
-              <div
-                style={{
-                  background: "#030712",
-                  border: "1px solid var(--border-default)",
-                  borderRadius: 10,
-                  flex: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  overflow: "hidden",
-                  boxShadow: "inset 0 2px 8px rgba(0,0,0,0.8)",
-                }}
-              >
-                {/* Terminal Header */}
-                <div
-                  style={{
-                    background: "rgba(255,255,255,0.02)",
-                    borderBottom: "1px solid rgba(255,255,255,0.05)",
-                    padding: "6px 12px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <div style={{ display: "flex", gap: 5 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444" }} />
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#fbbf24" }} />
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
-                  </div>
-                  <span style={{ fontSize: 9.5, color: "var(--text-muted)", fontFamily: "JetBrains Mono, monospace", fontWeight: 500 }}>
-                    node_vm_terminal.sh
-                  </span>
-                  <span style={{ width: 20 }} />
-                </div>
-
-                {/* Terminal Logs View */}
-                <div
-                  style={{
-                    padding: "12px",
-                    flex: 1,
-                    overflowY: "auto",
-                    fontFamily: "JetBrains Mono, monospace",
-                    fontSize: 11.5,
-                    lineHeight: 1.5,
-                    color: "#f3f4f6",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4,
-                  }}
-                >
-                  {/* Expected Static Prediction Header */}
-                  {expectedOutput.length > 0 && (
-                    <div style={{ color: "var(--text-muted)", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: 6, marginBottom: 6 }}>
-                      <span style={{ color: "var(--loop-primary)", fontWeight: 700 }}>[Static Plan] Expected: </span>
-                      {expectedOutput.join(" → ") || "No logs"}
-                    </div>
-                  )}
-
-                  {/* Dynamic Runtime Console Logs */}
-                  {consoleOutput.map((log, index) => (
-                    <div key={index} style={{ display: "flex", gap: 8 }}>
-                      <span style={{ color: "var(--loop-primary)", opacity: 0.6 }}>&gt;</span>
-                      <span style={{ wordBreak: "break-all" }}>{log}</span>
-                    </div>
-                  ))}
-
-                  {/* Blinking Cursor if running */}
-                  {isRunning && (
-                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                      <span style={{ color: "var(--loop-primary)", opacity: 0.6 }}>&gt;</span>
-                      <span
-                        style={{
-                          width: 6,
-                          height: 12,
-                          background: "var(--loop-primary)",
-                          animation: "blink-cursor 0.8s step-end infinite",
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  {/* Empty state */}
-                  {consoleOutput.length === 0 && !isRunning && (
-                    <div style={{ color: "var(--text-muted)", fontStyle: "italic", fontSize: 11, padding: "8px 0" }}>
-                      Terminal is idle. Click Analyze then Run to stream console logs.
-                    </div>
-                  )}
-                </div>
-              </div>
+            {/* Moved StatsPanel to left column */}
+            <div style={{ padding: "14px" }}>
+              <StatsPanel />
             </div>
           </div>
 
-          {/* Right Column: Dynamic Explanation, Queues Visualizer, and Execution Timeline */}
+          {/* Right Column: Dynamic Explanation, Queues Visualizer, and Console */}
           <div className="sim-center-column analyzer-right-column">
-            {/* StatsPanel shows iteration cards & dynamic educational text */}
-            <StatsPanel />
-
             {/* Core Event Loop visualization */}
-            <div className="analyzer-vis-card" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+            <div className="analyzer-vis-card" style={{ minHeight: 0, display: "flex", flexDirection: "column" }}>
               <VisualizationArea />
             </div>
 
-            {/* Bottom Timeline Card */}
-            <div
-              className="analyzer-timeline-card"
-              style={{
-                height: "170px",
-                flexShrink: 0,
-                minHeight: 0,
-                padding: "0 12px 12px 12px",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <div
-                className="timeline-section-card"
-                style={{
-                  flex: 1,
-                  background: "var(--bg-surface)",
-                  border: "1px solid var(--border-subtle)",
-                  borderRadius: 12,
-                  padding: "10px 12px",
-                  display: "flex",
-                  flexDirection: "column",
-                  overflow: "hidden",
-                }}
-              >
-                <div className="bottom-section-title">📊 Execution Timeline</div>
-                <div className="timeline-wrapper" style={{ flex: 1, overflowY: "auto" }}>
-                  <TimelineView />
-                </div>
-              </div>
-            </div>
+            {/* Console Output (and Guess Mode) */}
+            <ConsolePanel />
           </div>
         </div>
       </div>
 
-      {/* Styled Blinking Cursor animation */}
+      {/* Styled Blinking Cursor animation & Line Highlighting */}
       <style jsx global>{`
         @keyframes blink-cursor {
           from, to { background-color: transparent }
           50% { background-color: var(--loop-primary) }
+        }
+        .active-line-decoration {
+          background-color: rgba(167, 139, 250, 0.25) !important;
+          border-left: 3px solid #a855f7 !important;
         }
       `}</style>
     </AppShell>

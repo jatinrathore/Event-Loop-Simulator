@@ -1,6 +1,6 @@
 "use client";
 
-import { useRuntimeStore } from "@/app/_lib/store";
+import { useStoreContext as useRuntimeStore } from "@/app/_components/StoreProvider";
 import TaskCard from "./TaskCard";
 
 export default function MacrotaskQueue() {
