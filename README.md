@@ -42,24 +42,6 @@ https://medium.com/@rathorejatin168
 
 ---
 
-## Why I Built This
-
-While preparing for frontend and JavaScript interviews, I realized that most developers (including myself) understand the Event Loop conceptually but struggle when faced with real-world interview questions involving:
-
-* Promise chains
-* Nested microtasks
-* queueMicrotask()
-* async/await
-* setTimeout()
-* Call Stack behavior
-* Execution order prediction
-
-Most online explanations are static diagrams.
-
-I wanted something interactive where developers can **see** the Event Loop working instead of just reading about it.
-
----
-
 ## Features
 
 ### 🎮 Event Loop Simulator
