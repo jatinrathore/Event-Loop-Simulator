@@ -20,6 +20,30 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.svg",
   },
+  openGraph: {
+    title: "JS Event Loop Visualizer",
+    description:
+      "An interactive, animated visualizer that teaches you how the JavaScript Event Loop processes Microtasks and Macrotasks. Built for developers who want to deeply understand async JavaScript execution.",
+    url: "https://event-loop-simulator.vercel.app",
+    siteName: "JS Event Loop Visualizer",
+    images: [
+      {
+        url: "/event-loop.webp",
+        width: 1200,
+        height: 630,
+        alt: "JS Event Loop Visualizer — Interactive async JavaScript educator",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "JS Event Loop Visualizer",
+    description:
+      "An interactive, animated visualizer that teaches you how the JavaScript Event Loop processes Microtasks and Macrotasks. Built for developers who want to deeply understand async JavaScript execution.",
+    images: ["/event-loop.webp"],
+  },
 };
 
 export default function RootLayout({

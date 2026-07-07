@@ -320,7 +320,7 @@ Found an issue or have an idea?
 
 📧 Email: [rathorejatin168@gmail.com](mailto:rathorejatin168@gmail.com)
 
-💻 GitHub: https://github.com/jatinrathore
+💻 LinkedIn: https://www.linkedin.com/in/jatinrathore168/
 
 ---
 
